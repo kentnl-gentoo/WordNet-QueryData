@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.35 2004/08/25 20:15:26 jrennie Exp $
+# $Id: QueryData.pm,v 1.36 2004/11/10 20:00:43 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.35 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.36 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -99,7 +99,7 @@ my %relNameSym = ('ants' => {'!'=>1},
 		  'enta' => {'*'=>1},
 		  'caus' => {'>'=>1},
 		  'also' => {'^'=>1},
-		  'vgrp' => {'$'=>1}, # '$' Hack for font-lock in emacs
+		  'vgrp' => {'$'=>1},
 		  'sim' => {'&'=>1},
 		  'part' => {'<'=>1},
 		  'pert' => {'\\'=>1},
@@ -1117,12 +1117,13 @@ information.
 =head2 QUERYING THE DATABASE
 
 There are two primary query functions, 'querySense' and 'queryWord'.
-querySense accesses relations between senses; queryWord accesses
-relations between words.  Most relations (including hypernym, hyponym,
-meronym, holonym) are between senses.  Those between words include
-"also see", antonym, pertainym, "participle of verb", and derived forms.
-The glossary definition of a sense and the words in a synset are obtained
-via querySense.
+querySense accesses semantic (sense to sense) relations; queryWord
+accesses lexical (word to word) relations.  The majority of relations
+are semantic.  Some relations, including "also see", antonym,
+pertainym, "participle of verb", and derived forms are lexical.
+See the following WordNet documentation for additional information:
+
+  http://wordnet.princeton.edu/man/wninput.5WN#sect3
 
 Both functions take as their first argument a query string that takes
 one of three types:
@@ -1131,13 +1132,29 @@ one of three types:
   (2) word#pos (e.g. "house#n")
   (3) word#pos#sense (e.g. "ghostly#a#1")
 
-Types (1) or (2) passed to querySense or queryWord will return a list of
-possible query strings at the next level of specificity.  When type (3)
-is passed to querySense or queryWord, it requires a second argument, a
-relation.  Possible relations are:
+Types (1) or (2) passed to querySense or queryWord will return a list
+of possible query strings at the next level of specificity.  When type
+(3) is passed to querySense or queryWord, it requires a second
+argument, a relation.  Relations generally only work with one function
+or the other, though some relations can be either semantic or lexical;
+hence they may work for both functions.  Below is a list of known
+relations, grouped according to the function they're most likely to
+work with:
 
-  syns - synset words
+  queryWord
+  ---------
+  also - also see
   ants - antonyms
+  deri - derived forms (nouns and verbs only)
+  part - participle of verb (adjectives only)
+  pert - pertainym (pertains to noun) (adjectives only)
+  vgrp - verb group (verbs only)
+
+  querySense
+  ----------
+  also - also see
+  glos - word definition
+  syns - synset words
   hype - hypernyms
   hypo - hyponyms
   mmem - member meronyms
@@ -1149,15 +1166,9 @@ relation.  Possible relations are:
   hprt - part holonyms
   holo - all holonyms
   attr - attributes (?)
+  sim  - similar to (adjectives only)
   enta - entailment (verbs only)
   caus - cause (verbs only)
-  also - also see
-  vgrp - verb group (verbs only)
-  sim  - similar to (adjectives only)
-  part - participle of verb (adjectives only)
-  pert - pertainym (pertains to noun) (adjectives only)
-  glos - word definition
-  deri - derived forms (nouns and verbs only)
   domn - domain - all
   dmnc - domain - category
   dmnu - domain - usage
@@ -1167,8 +1178,13 @@ relation.  Possible relations are:
   dmtu - member of domain - usage (nouns only)
   dmtr - member of domain - region (nouns only)
 
-When called in this manner, querySense and queryWord will return a list of
-related senses.
+When called in this manner, querySense and queryWord will return a
+list of related words/senses.
+
+Note that querySense and queryWord use type (3) query strings in
+different ways.  A type (3) string passed to querySense specifies a
+synset.  A type (3) string passed to queryWord specifies a specific
+sense of a specific word.
 
 =head2 OTHER FUNCTIONS
 

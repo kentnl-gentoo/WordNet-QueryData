@@ -1,10 +1,21 @@
+2004-11-10  Jason Rennie
+
+	* release 1.36
+	* QueryData.pm (documentation): revise queryWord vs. querySense
+	documentation
+
+2004-09-03  Jason Rennie
+
+	* README: add pointer to NMake information for Windows
+
 2004-08-25  Jason Rennie
 
 	* release 1.35
 	* QueryData.pm (loadExclusions): if there are two entries for the
 	same word, append to the list created by earlier entries (thanks
 	for Jerry D. Hedden for spotting the bug (validForms("involucra")
-	didn't produce involucre#n)
+	didn't produce involucre#n due to later involcra->involcrum
+	exclusion entry)
 	* test.pl: add involucra->involucre test
 
 2004-08-24  Jason Rennie

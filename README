@@ -14,8 +14,8 @@ second.
 PREREQUISITES
 -------------
 
-- Perl5 (e.g 5.005_03 or 5.6.1)
-- WordNet Database Package version 2.0 
+- Perl5
+- WordNet Database Package version 2.0 (v1.7.1 may also work)
 
 DOCUMENTATION
 -------------
@@ -27,10 +27,22 @@ The ChangeLog file lists a summary of changes to the code.
 
 See http://groups.yahoo.com/group/wn-perl for information on the mailing list.
 
-BUILD & INSTALL (Unix)
-----------------------
+WINDOWS INSTALLATION
+--------------------
 
-See below for Windows install.
+This assumes that perl was installed to the default location (C:\perl).
+
+  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.0
+  1) Unpack the WordNet QueryData distribution
+  2) Create the directory C:\perl\site\lib\WordNet
+  3) Copy QueryData.pm to C:\perl\site\lib\WordNet
+  4) Run "perl test.pl" to test the installation
+
+Alternatively, you can install NMake and use the Make installation steps.
+See http://johnbokma.com/perl/make-for-windows.html for info on NMake.
+
+MAKE INSTALLATION
+-----------------
 
 Installation uses the perl MakeMaker utility ('perldoc
 ExtUtils::MakeMaker').  To build and test the distribution do:
@@ -52,7 +64,6 @@ If the tests run okay, install with (this may need to be run as root):
 
      make install
 
-
 CUSTOM DIRECTORY
 ----------------
 
@@ -62,14 +73,6 @@ mkdir /foo/bar/baz/WordNet
 cp QueryData.pm /foo/bar/baz/WordNet
 
 Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
-
-WINDOWS
--------
-
-  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.0
-  1) Unpack the WordNet QueryData distribution
-  2) Copy QueryData.pm to C:\Program Files\WordNet
-  3) Run perl -I"C:\Program Files" test.pl to test the installation
 
 COPYRIGHT
 ---------
