@@ -2,14 +2,14 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.3 2000/02/02 16:55:48 jrennie Exp $
+# $Id: test.pl,v 1.7 2000/03/31 13:06:53 jrennie Exp $
 
 ######################### We start with some black magic to print on failure.
 
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..15\n"; }
+BEGIN { $| = 1; print "1..19\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use WordNet::QueryData;
 $loaded = 1;
@@ -46,7 +46,7 @@ scalar $wn->query ("cat") == 2
 scalar $wn->query ("cat#n") == 7
     ? print "ok 8\n" : print "not ok 8\n";
 
-scalar $wn->query ("cat#n#1", "hyponym") == 2
+scalar $wn->query ("cat#n#1", "hypo") == 2
     ? print "ok 9\n" : print "not ok 9\n";
 (!$wn->query ("cat#n#1", "ants"))
     ? print "ok 10\n" : print "not ok 10\n";
@@ -65,3 +65,16 @@ scalar $wn->valid_forms ("lay down#v") == 2
     ? print "ok 14\n" : print "not ok 14\n";
 scalar $wn->valid_forms ("checked#v") == 1
     ? print "ok 15\n" : print "not ok 15\n";
+
+($wn->query ("cat#n#1", "glos") eq "feline mammal usually having thick soft fur and being unable to roar; domestic cats; wildcats  ") ? print
+"ok 16\n" : print "not ok 16\n";
+
+scalar $wn->query ("child#n#1", "syns") == 12
+    ? print "ok 17\n" : print "not ok 17\n";
+
+$wn->offset ("child#n#1") == 7153837
+    ? print "ok 18\n" : print "not ok 18\n";
+
+scalar $wn->query ("car#n#1", "mero") == 29
+    ? print "ok 19\n" : print "not ok 19\n";
+

@@ -1,3 +1,39 @@
+2000-03-31  Eric Joanis <joanis@cs.toronto.edu>
+
+	* QueryData.pm (%relation_sym): '#' is holonym symbol, '%' is
+	meronym symbol.  Previously had this backwards.
+
+2000-03-28  Eric Joanis <joanis@cs.toronto.edu>
+
+	* QueryData.pm (%relation_sym): don't escape dollar-sign
+	* QueryData.pm (get_all_words): fix problems with "new to(p)"
+	by removing "(p)"
+
+2000-03-22  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (offset): new function
+	* test.pl: add test for offset
+
+2000-03-21  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (get_pointers, get_all_words): fix minor bug in
+	data file parsing
+
+2000-03-10  Jason Rennie <jrennie@ai.mit.edu>
+
+	* test.pl: Test for new glos code
+
+2000-03-10  John Matiasek <john@ai.univie.ac.at>
+
+	* QueryData.pm: Allow access to glossary definitions (glos)
+
+2000-02-22  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm: Rewrite documentation; disallow long relation names
+	* QueryData.pm (query): use single regex (like valid_forms);
+	clean up code a bit
+	* QueryData.pm (level): new function
+
 2000-02-02  Keith J. Miller  <keith@mitre.org>
 
 	* QueryData.pm (forms): make consistent with query syntax;
@@ -6,11 +42,11 @@
 	* test.pl: make tests consistent with changes, add checks for
 	new function
 
-1999-10-22  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+1999-10-22  Jason Rennie  <jrennie@ai.mit.edu>
 
 	* QueryData.pm: update documentation to look a bit nicer
 
-1999-09-15  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+1999-09-15  Jason Rennie  <jrennie@ai.mit.edu>
 
 	* README: make specific to QueryData
 	* README: rewrite to correspond to Query
@@ -20,7 +56,7 @@
 	* QueryData.pm: allow long relation names; allow long POS names;
 	check for illegal POS
 
-1999-09-14  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+1999-09-14  Jason Rennie  <jrennie@ai.mit.edu>
 
 	* my_test.pl: nice test suite for QueryData 1.2.
 	* QueryData.pm: first draft of direct access to WordNet data
@@ -29,7 +65,7 @@
 	integrate forms into query.  query requires the word form to be
 	exactly like that in WordNet (although caplitalization may differ)
 
-1999-09-13  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+1999-09-13  Jason Rennie  <jrennie@ai.mit.edu>
 
 	* my_test.pl: test corpus for QueryData
 

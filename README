@@ -7,7 +7,7 @@ includes full support for all parts of WordNet (nouns, verbs,
 adjectives and adverbs) and is very efficient after the initialization
 step (where index and morph. exc. files are loaded).  This
 initialization step will prove to be annoying if you simply want to
-'play' with WordNet.  On my PII/400, it takes about 15 seconds and 16
+'play' with WordNet.  On my PIII/500, it takes about 12 seconds and 16
 megs of memory to initialize.  After that, however, things should be
 blazingly fast and efficient.  All file access is done with fseek
 calls and takes full advantage of the static nature of the WordNet
@@ -50,13 +50,21 @@ The included man page (do 'perldoc WordNet::QueryData' to extract) should
 give you a good idea of how to use this module and what it is good
 for.
 
+If you are upgrading from an older version, check the ChangeLog file
+for information about changes to the code.
+
 WordNet perl modules can be found at
 http://www.ai.mit.edu/~jrennie/WordNet/
+
+There is a mailing list, wn-perl@egroups, for the discussion of
+WordNet::QueryData.  Visit
+http://www.egroups.com/group/wn-perl/info.html to see past messages
+and for information on how to subscribe.
 
 COPYRIGHT
 ---------
 
-Copyright 1999 Jason Rennie <jrennie@ai.mit.edu>  All rights reserved.
+Copyright (C) 2000 Jason Rennie <jrennie@ai.mit.edu>  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
