@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.21 2002/06/11 14:41:31 jrennie Exp $
+# $Id: QueryData.pm,v 1.22 2002/06/14 00:42:31 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.21 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.22 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -150,7 +150,7 @@ my @indexFilePC = ("", "noun.idx", "verb.idx", "adj.idx", "adv.idx");
 my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
 
 my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/wordnet1.7";
-my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\wn17";
+my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\wn16";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $wnHomeUnix."/".$ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $wnHomePC."\\".$ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
@@ -623,6 +623,7 @@ sub getWord#
     my $line = <$fh>;
     my $w_cnt;
     (undef, undef, undef, $w_cnt, $line) = split (/\s+/, $line, 5);
+    $w_cnt = hex ($w_cnt);
     for (my $i=0; $i < $w_cnt; ++$i) {
 	my $word;
 	($word, undef, $line) = split(/\s+/, $line, 3);

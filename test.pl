@@ -2,10 +2,10 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.18 2002/06/11 14:41:31 jrennie Exp $
+# $Id: test.pl,v 1.19 2002/06/14 00:42:31 jrennie Exp $
 
 my $i = 1;
-BEGIN { $| = 1; print "v1.6: 1..24\nv1.7: 1..26\n"; }
+BEGIN { $| = 1; print "v1.6: 1..25\nv1.7: 1..27\n"; }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
 $loaded = 1;
@@ -22,6 +22,8 @@ my $wn = WordNet::QueryData->new;
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
 
+($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->forms ("other sexes#1") == 3
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->forms ("fussing#2") == 3

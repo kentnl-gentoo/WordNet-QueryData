@@ -1,3 +1,13 @@
+2002-06-12  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.22
+	* Makefile.PL: die if WNHOME isn't set and the neither the windows
+	nor the unix default directory exists (so that CPAN tests will
+	die prematurely if WordNet is not installed---will prevent false
+	FAIL's)
+	* QueryData.pm (getWord): bugfix: convert $w_cnt from hexadecimal
+	(thanks to "Peter Turney" <peter.turney@nrc.ca> for spotting the bug)
+	
 2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.21
