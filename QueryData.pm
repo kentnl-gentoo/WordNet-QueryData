@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.22 2002/06/14 00:42:31 jrennie Exp $
+# $Id: QueryData.pm,v 1.23 2002/06/21 17:23:49 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.22 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.23 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -437,8 +437,8 @@ sub get_pointers
     my ($line, $pointer, $index_offset) = @_;
     my $i;
     
+    # $w_cnt is hexadecimal
     my ($offset, $lex_file, $ss_type, $w_cnt, @stuff) = split (/\s+/, $line);
-    # $w_cnt is in hex, not decimal
     $w_cnt = hex ($w_cnt);
     print STDERR "Offsets differ INDEX=$index_offset DATA=$offset\n"
 	if ($index_offset != $offset);
@@ -449,7 +449,8 @@ sub get_pointers
     my (@pointer_info) = splice (@stuff, 0, $p_cnt*4);
     for ($i=0; $i < $p_cnt; $i++)
     {
-	my ($type, $offset, $pos, $srctgt) = splice (@pointer_info, 0, 4);
+	# $st "source/target" is 2-part hexadecimal
+	my ($type, $offset, $pos, $st) = splice (@pointer_info, 0, 4);
 	push @{$pointer->{$relation_sym{$type}}}, "$offset\#$pos";
     }
     my $key;
@@ -464,6 +465,7 @@ sub getSensePointers#
 	if ($self->{verbose});
     
     my (@rtn, $w_cnt);
+    # $w_cnt is hexadecimal
     (undef, undef, undef, $w_cnt, $line) = split (/\s+/, $line, 5);
     $w_cnt = hex ($w_cnt);
     for (my $i=0; $i < $w_cnt; ++$i) {
@@ -473,9 +475,10 @@ sub getSensePointers#
     ($p_cnt, $line) = split(/\s+/, $line, 2);
     for (my $i=0; $i < $p_cnt; ++$i) {
 	my ($sym, $offset, $pos, $st);
+	# $st "source/target" is 2-part hexadecimal
 	($sym, $offset, $pos, $st, $line) = split(/\s+/, $line, 5);
 	push @rtn, $self->getSense($offset, $pos)
-	    if ($st==0 and defined($ptr->{$sym}));
+	    if (hex($st)==0 and defined($ptr->{$sym}));
     }
     return @rtn;
 }
@@ -499,10 +502,11 @@ sub getWordPointers#
     ($p_cnt, $line) = split(/\s+/, $line, 2);
     for (my $i=0; $i < $p_cnt; ++$i) {
 	my ($sym, $offset, $pos, $st);
+	# $st "source/target" is 2-part hexadecimal
 	($sym, $offset, $pos, $st, $line) = split(/\s+/, $line, 5);
 	next if (!$st);
 	my ($src, $tgt) = ($st =~ m/(\d{2})(\d{2})/);
-	push @rtn, $self->getWord($offset, $pos, $tgt)
+	push @rtn, $self->getWord($offset, $pos, hex($tgt))
 	    if (defined($ptr->{$sym}) and ($word eq $word[$src-1]));
     }
     return @rtn;

@@ -1,3 +1,10 @@
+2002-06-20  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.23
+	* test.pl: add test to check for hex conversion
+	* QueryData.pm (getSensePointers): convert $st from hexidecimal
+	* QueryData.pm (getWordPointers): convert $tgt from hexidecimal
+
 2002-06-12  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.22

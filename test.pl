@@ -2,10 +2,10 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.19 2002/06/14 00:42:31 jrennie Exp $
+# $Id: test.pl,v 1.20 2002/06/21 17:23:49 jrennie Exp $
 
 my $i = 1;
-BEGIN { $| = 1; print "v1.6: 1..25\nv1.7: 1..27\n"; }
+BEGIN { $| = 1; print "v1.6: 1..26\nv1.7: 1..28\n"; }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
 $loaded = 1;
@@ -21,6 +21,9 @@ my $wn = WordNet::QueryData->new;
 #my $wn = WordNet::QueryData->new("/home/ai2/jrennie/usr/share/wordnet-1.6/dict");
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
+
+($wn->querySense("sunset#n#1", "hype"))[0] eq "hour#n#2"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 ($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
