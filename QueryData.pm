@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.9 2000/03/31 13:06:53 jrennie Exp $
+# $Id: QueryData.pm,v 1.10 2000/09/12 12:29:47 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.9 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.10 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -88,7 +88,7 @@ my %relation_sym = ('!'  => 'ants',
 		    '*'  => 'enta',
 		    '>'  => 'caus',
 		    '^'  => 'also',
-		    '$' => 'vgrp',
+		    '$' => 'vgrp', # '$' Hack to make font-lock work in emacs
 		    '&'  => 'sim',
 		    '<'  => 'part',
 		    '\\' => 'pert');
@@ -120,11 +120,18 @@ sub _initialize
 {
     my $self = shift;
     print STDERR "Loading WordNet data, please wait...\n" if ($self->{verbose});
+    # Ensure that input record separator is "\n"
+    my $old_separator = $/;
+    $/ = "\n";
+
     # Load morphology exclusion mapping
     $self->load_exclusions ();
     $self->load_index ();
     $self->open_data ();
     print STDERR "Done.\n" if ($self->{verbose});
+
+    # Return setting of input record separator
+    $/ = $old_separator;
 }
 
 sub new
@@ -443,6 +450,10 @@ sub query
     my $relation = shift;
     my $i;
 
+    # Ensure that input record separator is "\n"
+    my $old_separator = $/;
+    $/ = "\n";
+
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
 
@@ -543,6 +554,8 @@ sub query
     {
 	warn "Illegal query string: $string\n";
     }
+    # Return setting of input record separator
+    $/ = $old_separator;
 }
 
 sub valid_forms
@@ -561,6 +574,13 @@ sub valid_forms
     @valid_forms = grep $self->query ("$_#$pos"), @possible_forms;
 
     return @valid_forms;
+}
+
+# List all words in WordNet database of a particular part of speech
+sub list_all_words
+{
+    my ($self, $pos) = @_;
+    return keys(%{$self->{"index"}->[$pos_num{$pos}]})
 }
 
 # Return length of (some) path to root, plus one (root is considered
@@ -607,6 +627,9 @@ WordNet::QueryData - direct perl interface to WordNet database
 
   # Base form(s) of the verb 'lay down'
   print "lay down-> ", join (", ", $wn->valid_forms ("lay down#v")), "\n";
+
+  # Print number of nouns in WordNet
+  print "Count of nouns: ", scalar($wn->list_all_words("noun")), "\n";
 
 =head1 DESCRIPTION
 
@@ -717,6 +740,10 @@ offsets (the unique number that identifies a word sense).  The
 function 'offset' accepts a fully-qualified word sense in the form
 WORD#POS#SENSE and returns the corresponding numerical offset.  See
 WordNet documentation for more information about this quantity.
+
+The function 'list_all_words' will return an array of all words of a
+particular part-of-speech given that part-of-speech as its only
+argument.
 
 =head1 NOTES
 

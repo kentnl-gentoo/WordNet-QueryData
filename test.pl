@@ -2,14 +2,14 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.7 2000/03/31 13:06:53 jrennie Exp $
+# $Id: test.pl,v 1.8 2000/09/12 12:29:47 jrennie Exp $
 
 ######################### We start with some black magic to print on failure.
 
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..19\n"; }
+BEGIN { $| = 1; print "1..20\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use WordNet::QueryData;
 $loaded = 1;
@@ -78,3 +78,5 @@ $wn->offset ("child#n#1") == 7153837
 scalar $wn->query ("car#n#1", "mero") == 29
     ? print "ok 19\n" : print "not ok 19\n";
 
+scalar $wn->list_all_words("noun") == 94474
+    ? print "ok 20\n" : print "not ok 20\n";

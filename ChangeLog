@@ -1,3 +1,17 @@
+2001-02-26  Luigi Bianchi <lbianchi@yorku.ca>
+
+	* README: added an installation procedure for Windows
+
+2000-09-12  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (list_all_words): new function
+	* test.pl: add test for list_all_words
+
+2000-05-04  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (_initialize, query): explicitly set value of input
+	record separator; restore old value before returning
+
 2000-03-31  Eric Joanis <joanis@cs.toronto.edu>
 
 	* QueryData.pm (%relation_sym): '#' is holonym symbol, '%' is

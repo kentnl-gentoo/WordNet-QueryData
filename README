@@ -35,13 +35,39 @@ perl Makefile.PL
 make
 make test
 
-Before running 'make test', you may need to modify test.pl to indicate
+Before running 'make test', you will need to modify test.pl to indicate
 the correct location of the WordNet 'dict' directory.  The default
 location is /usr/local/dict.
 
 To install do:
 
 make install
+
+NOTE: The above has been tested with RedHat Linux and is likely to
+work under most unices.  See below for notes on a Windows install.
+
+WINDOWS
+-------
+
+Here's the install proceedure suggested by Luigi Bianchi
+<lbianchi@yorku.ca> for Win95.  Let me <jrennie@mit.edu> know if this
+doesn't work for other Windows variants.
+
+  1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.
+  2) Create the dir WordNet off the distribution, i.e. 
+     /djgpp/lib/perl5/site/WordNet-QueryData-1.10/WordNet  and copy
+     QueryData.pm in it.
+  3) In the wordNet distribution directory ( /wn16/dict ) rename (or copy,
+     if other packages depend on the distribution filenames) all the
+     *.idx files index.* and all the *.dat files data.* 
+  4) Follow your instructions as per your README, i.e. replace 
+     "/usr/local/dict" with "/wn16/dict" in test.pl
+  5) Start bash etc. 
+  
+  I noticed that, despite the final success, perl complains that it can't 
+  find perl5 (though in fact it does--just a question of how the version is 
+  reported); that MANIFEST and README are missing (though they are there with 
+  test.pl), and that blib already exists (it does).
 
 DOCUMENTATION
 -------------
@@ -56,10 +82,16 @@ for information about changes to the code.
 WordNet perl modules can be found at
 http://www.ai.mit.edu/~jrennie/WordNet/
 
+There is a mailing list, wn-perl@egroups.com, for the discussion of
+WordNet::QueryData.  Visit
+http://www.egroups.com/group/wn-perl/info.html to see past messages
+and for information on how to subscribe.
+
 COPYRIGHT
 ---------
 
-Copyright (C) 2000 Jason Rennie <jrennie@ai.mit.edu>  All rights reserved.
+Copyright (C) 2000,2001 Jason Rennie <jrennie@ai.mit.edu> All rights
+reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
