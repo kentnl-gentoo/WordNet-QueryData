@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.28 2003/04/03 08:00:36 jrennie Exp $
+# $Id: QueryData.pm,v 1.29 2003/09/08 22:01:48 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.28 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.29 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -163,6 +163,9 @@ END { } # module clean-up code here (global destructor)
 # report WordNet version
 sub version { my $self = shift; return $self->{version}; }
 
+# report WordNet data dir -- Sid (05/01/2003)
+sub dataPath { my $self = shift; return $self->{wnpath}; }
+
 # convert to lower case, translate ' ' to '_' and eliminate any
 # syntactic marker
 sub lower#
@@ -268,6 +271,11 @@ sub loadIndex#
 	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$indexFilePC[$i] : "$wnPrefixPC\\$indexFilePC[$i]";
 	
 	my $fh = new FileHandle($fileUnix);
+	
+	# Added Code -- WordNet data path being used -- Sid (05/01/2003)
+	if (defined $fh) { $self->{wnpath} = defined($self->{dir}) ? $self->{dir} : $wnPrefixUnix; }
+	else { $self->{wnpath} = defined($self->{dir}) ? $self->{dir} : $wnPrefixPC; }
+	
 	$fh = new FileHandle($filePC) if (!defined($fh));
 	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
 	
@@ -630,7 +638,7 @@ sub getSense#
     die "(getSense) Internal error: offset=$offset pos=$pos";
 }
 
-# returns word#pos for given offset, pos and number
+# returns word#pos#sense for given offset, pos and number
 sub getWord#
 {
     my ($self, $offset, $pos, $num) = @_;
@@ -642,11 +650,17 @@ sub getWord#
     my $w_cnt;
     (undef, undef, undef, $w_cnt, $line) = split (/\s+/, $line, 5);
     $w_cnt = hex ($w_cnt);
+    my $word;
     for (my $i=0; $i < $w_cnt; ++$i) {
-	my $word;
 	($word, undef, $line) = split(/\s+/, $line, 3);
 	$word = delMarker($word);
-	return "$word\#$pos" if ($i+1 == $num);
+	# (mich0212) return "$word\#$pos" if ($i+1 == $num);
+	last if ($i+1 == $num);
+    }
+    my $lword = lower($word);
+    my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
+    for (my $i=0; $i < @offArr; $i++) {
+	return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
     }
     die "(getWord) Bad number: offset=$offset pos=$pos num=$num";
 }
@@ -851,7 +865,7 @@ sub queryWord#
     my $self = shift;
     my $string = shift;
 
-    warn "queryWord: WARNING: certain aspects of this function are broken.  It needs\n a rewrite.  Use at your own risk.\n";
+    # (mich0212) warn "queryWord: WARNING: certain aspects of this function are broken.  It needs\n a rewrite.  Use at your own risk.\n";
     
     # Ensure that input record separator is "\n"
     my $old_separator = $/;
@@ -860,7 +874,7 @@ sub queryWord#
     
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
-    warn "(queryWord) Ignorning sense: $string" if (defined($sense));
+    # (mich0212) warn "(queryWord) Ignorning sense: $string" if (defined($sense));
     die "(queryWord) Bad query string: $string" if (!defined($word));
     my $lword = lower ($word);
     die "(queryWord) Bad part-of-speech: $string"
@@ -875,12 +889,13 @@ sub queryWord#
 	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
 	
 	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	my @offsets = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
-	foreach my $offset (@offsets) {
-	    seek $fh, $offset, 0;
-	    my $line = <$fh>;
-	    push @rtn, $self->getWordPointers($line, $relNameSym{$rel}, $word);
-	}
+	# (mich0212) my @offsets = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
+	my $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
+	# (mich0212) foreach my $offset (@offsets) {
+	seek $fh, $offset, 0;
+	my $line = <$fh>;
+	push @rtn, $self->getWordPointers($line, $relNameSym{$rel}, $word);
+	# (mich0212) }
     } elsif (defined($word)) {
 	print STDERR "(queryWord) WORD=$word\n" if ($self->{verbose});
 	

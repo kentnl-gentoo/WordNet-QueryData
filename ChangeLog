@@ -1,11 +1,22 @@
-2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
+2003-09-08  Jason R Michelizzi <mich0212@d.umn.edu>
+
+	* release 1.29
+	* QueryData.pm (getWord): debug
+	* QueryData.pm (queryWord): debug
+	
+2003-05-02  Siddharth A Patwardhan <patw0006@d.umn.edu>
+
+        * QueryData.pm (loadIndex): remember WordNet path
+
+2003-04-03  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.28
 
 	* QueryData.pm ($version): make into a package variable
 
-	* QueryData.pm (queryWord): die if called; queryWord does not work
-	as it should and needs a major rewrite
+	* QueryData.pm (queryWord): warn if called; certain aspects of
+	queryWord do not work as they should; see commented out tests in
+	test.pl for examples of what doesn't work
 
 2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
 

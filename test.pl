@@ -2,7 +2,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.25 2002/12/04 06:08:11 jrennie Exp $
+# $Id: test.pl,v 1.26 2003/09/08 22:01:48 jrennie Exp $
 
 my $i = 1;
 BEGIN { $| = 1; print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\n"; }
@@ -18,13 +18,11 @@ print "ok ", $i++, "\n";
 print "Loading index files.  This may take a while...\n";
 # Uses $WNHOME environment variable
 my $wn = WordNet::QueryData->new;
-#my $wn = WordNet::QueryData->new("/home/ai2/jrennie/usr/share/wordnet-1.7/dict");
-#my $wn = WordNet::QueryData->new("/home/ai2/jrennie/usr/share/wordnet-1.6/dict");
+#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-1.7.1");
+
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
 
-($wn->queryWord("sunset#n", "ants"))[0] eq "sunrise#n"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->querySense("sunset#n#1", "hype"))[0] eq "hour#n#2"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
@@ -42,10 +40,6 @@ scalar $wn->querySense ("cat#n") == 7
 
 scalar $wn->querySense ("cat#n#1", "hypo") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("affirm#v", "ants"))[0] eq "negate#v"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("sure#a", "ants"))[0] eq "unsure#a"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 # check that underscore is added, syntactic marker is removed
 ($wn->querySense("infra dig"))[0] eq "infra_dig#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -55,11 +49,7 @@ scalar $wn->querySense ("cat#n#1", "hypo") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->queryWord("descending"))[0] eq "descending#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("descending#a", "ants"))[0] eq "ascending#a"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-($wn->queryWord ("play down#v", "ants"))[0] eq "play_up#v"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->querySense ("lay down#v#1", "syns"))[0] eq "lay_down#v#1"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->validForms ("lay down#v") == 2
@@ -99,16 +89,16 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->validForms("women#n"))[0] eq "woman#n"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-# Antonym relation is between synset elements
-#($wn->queryWord("dark#n#1", "ants"))[0] eq "light#n#10"
-#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-#($wn->queryWord("darkness#n#1", "ants")) == 0
-#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-# queryWord returns more specific sets (like querySense)
-#($wn->queryWord("sunset#n")) == 3
-#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-#($wn->queryWord("sunset")) == 2
-#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("dark#n#1", "ants"))[0] eq "light#n#10"
+? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("darkness#n#1", "ants")) == 0
+? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("blue#a#3", "pert"))[0] eq "blue#n#2"
+? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("chattering#a#1", "part"))[0] eq "chatter#v#5"
+? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("act#v#2", "also"))[0] eq "act_up#v#2"
+? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 if ($ver eq "1.6") {
     scalar $wn->querySense ("cat#noun#7", "syns") == 5
