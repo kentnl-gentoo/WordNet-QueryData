@@ -1,4 +1,16 @@
-2000-09-12  John Asmuth <jasmuth@clarity.princeton.edu>
+2001-11-22  Jason Rennie <jrennie@ai.mit.edu>
+
+	* test.pl ($wnDir): use WNHOME environment variable
+	* test.pl: update tests for WordNet 1.7; identify which tests work
+	for 1.6 and which work for 1.7
+	* README (CUSTOM DIRECTORY): new section
+
+2001-11-22  Eric Joanis <joanis@cs.toronto.edu>
+
+	* QueryData.pm (remove_duplicates): new function
+	* QueryData.pm (forms): use it
+
+2001-09-12  John Asmuth <jasmuth@clarity.princeton.edu>
 
 	* QueryData.pm ($wordnet_dir): use WNHOME environment variable
 

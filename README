@@ -29,7 +29,7 @@ while you're at it.
 BUILD & INSTALL
 ---------------
 
-To build do:
+To put WordNet::QueryData in the standard place do:
 
 perl Makefile.PL
 make
@@ -46,11 +46,21 @@ make install
 NOTE: The above has been tested with RedHat Linux and is likely to
 work under most unices.  See below for notes on a Windows install.
 
+CUSTOM DIRECTORY
+----------------
+
+To install WordNet::QueryData in /foo/bar/baz do:
+
+mkdir /foo/bar/baz/WordNet
+cp QueryData.pm /foo/bar/baz/WordNet
+
+Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
+
 WINDOWS
 -------
 
 Here's the install proceedure suggested by Luigi Bianchi
-<lbianchi@yorku.ca> for Win95.  Let me <jrennie@mit.edu> know if this
+<lbianchi@yorku.ca> for Win95.  Let me <jrennie@ai.mit.edu> know if this
 doesn't work for other Windows variants.
 
   1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.

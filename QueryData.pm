@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.11 2001/09/12 21:43:33 jrennie Exp $
+# $Id: QueryData.pm,v 1.12 2001/11/22 17:48:01 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.11 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.12 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -236,6 +236,25 @@ sub open_data
 }
 
 
+# Remove duplicate values from an array, which must be passed as a
+# reference to an array.
+sub remove_duplicates
+{
+    my $self = shift;
+    my $aref = shift;   # Array reference
+
+    my $i = 0;
+    while ( $i < $#$aref ) {
+        if ( grep {$_ eq ${$aref}[$i]} @{$aref}[$i+1 .. $#$aref] ) {
+            # element at $i is duplicate--remove it
+            splice @$aref, $i, 1;
+        } else {
+            $i++;
+        }
+    }
+}
+
+
 # Generate list of all possible forms of how word may be found in WordNet
 sub forms
 {
@@ -292,6 +311,9 @@ sub forms
 	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)r$/);
 	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)st$/);
 	}
+        # Remove any form generated more than once by the above code 
+        # (This usually happens when an exception can also be generated.) 
+        $self->remove_duplicates($token_form[$i]);
     }
     # Generate all possible token sequences (collocations)
     my @index; for ($i=0; $i < @token; $i++) { $index[$i] = 0; }
