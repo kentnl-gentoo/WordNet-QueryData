@@ -1,3 +1,9 @@
+2002-08-06  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.26
+	* QueryData.pm (wnPrefixUnix, wnPrefixPC): don't prepend WNHOME to
+	WNSEARCHDIR
+	
 2002-07-30  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.25
@@ -6,10 +12,9 @@
 	* QueryData.pm: only lowercase when necessary (index.* lookups)
 	* QueryData.pm (getAllSenses): return word straight from data.*
 	* QueryData.pm (getSense): return word straight from data.*
-	* QueryData.pm (querySense): form (1) & (2): use same capitalization
+	* QueryData.pm (querySense): type (1) & (2): use same capitalization
 	as query
-	* QueryData.pm (queryWord): form (1): use same capitalization as
-	query
+	* QueryData.pm (queryWord): type (1): use same capitalization as query
 	* QueryData.pm (getWordPointers): lower($word), ignore case in
 	comparison
 	* QueryData.pm (loadExclusions): don't lowercase words

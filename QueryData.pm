@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.25 2002/07/30 20:08:03 jrennie Exp $
+# $Id: QueryData.pm,v 1.26 2002/08/06 18:51:26 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.25 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.26 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -151,8 +151,8 @@ my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
 
 my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-1.7.1";
 my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\1.7.1";
-my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $wnHomeUnix."/".$ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
-my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $wnHomePC."\\".$ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
+my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
+my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
 # WordNet database version
 my $version;
@@ -1025,8 +1025,9 @@ QueryData.  To do this, pass the location to "new":
 
   my $wn = new WordNet::QueryData->new("/usr/local/wordnet/dict")
 
-When calling "new" in this fashion, you can give it a second argument
-to have QueryData print out progress and warning messages.
+When calling "new" in this fashion, you can give it a second verbosity
+argument; a true value will have QueryData print debugging
+information.
 
 =head2 QUERYING THE DATABASE
 
@@ -1074,7 +1075,7 @@ requires a second argument, a relation.  Possible relations are:
 
 When called in this manner, querySense will return a list of related
 senses.  When queryWord is called with a type (2), it requires a
-relation and will return a list of related words (of type (2)).
+relation and will return a list of related words (type (2) strings).
 
 =head2 OTHER FUNCTIONS
 
@@ -1092,7 +1093,7 @@ necessarily the shortest or longest) to the root in the hypernym
 directed acyclic graph.
 
 "offset" accepts a type (3) query string and returns the binary offset of
-that sense''s location in the corresponding data file.
+that sense's location in the corresponding data file.
 
 "tagSenseCnt" accepts a type (2) query string and returns the tagsense_cnt
 value for that lemma: "number of senses of lemma that are ranked
