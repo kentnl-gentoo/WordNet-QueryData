@@ -4,12 +4,12 @@
 
 # Run 'perldoc' on this file to produce documentation
 
-# Copyright 1999 Jason Rennie <jrennie@ai.mit.edu>
+# Copyright 1999 Jason Rennie <jrennie@csail.mit.edu>
 
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.31 2003/10/08 19:22:49 jrennie Exp $
+# $Id: QueryData.pm,v 1.33 2004/07/14 14:43:42 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.31 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.33 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -1053,13 +1053,13 @@ environment variables, or 2) by passing the location to QueryData when
 you invoke the "new" function.
 
 QueryData knows about two environment variables, WNHOME and
-WNSEARCHDIR.  By default, QueryData assumes that WordNet data files
-are located in WNHOME/WNSEARCHDIR (WNHOME\WNSEARCHDIR on a PC), where
-WNHOME defaults to "/usr/local/WordNet-2.0" on Unix and "C:\Program
-Files\WordNet\2.0" on a PC.  WNSEARCHDIR defaults to "dict".
-Normally, all you have to do is to set the WNHOME variable to the
-location where you unpacked your WordNet distribution.  The database
-files are always unpacked to the "dict" subdirectory.
+WNSEARCHDIR.  If WNSEARCHDIR is set, QueryData looks for WordNet data
+files there.  Otherwise, QueryData looks for WordNet data files in
+WNHOME/dict (WNHOME\dict on a PC).  If WNHOME is not set, it defaults
+to "/usr/local/WordNet-2.0" on Unix and "C:\Program Files\WordNet\2.0"
+on a PC.  Normally, all you have to do is to set the WNHOME variable
+to the location where you unpacked your WordNet distribution.  The
+database files are normally unpacked to the "dict" subdirectory.
 
 You can also pass the location of the database files directly to
 QueryData.  To do this, pass the location to "new":
@@ -1169,6 +1169,6 @@ perl(1)
 
 http://www.cogsci.princeton.edu/~wn/
 
-http://www.ai.mit.edu/people/jrennie/WordNet/
+http://people.csail.mit.edu/~jrennie/WordNet/
 
 =cut

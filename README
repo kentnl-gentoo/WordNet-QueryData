@@ -67,7 +67,7 @@ WINDOWS
 -------
 
 Here's the install proceedure suggested by Luigi Bianchi, lbianchi AT
-yorku.ca, for Win95.  Let me, jrennie AT ai.mit.edu, know if this
+yorku.ca, for Win95.  Let me, jrennie@csail.mit.edu, know if this
 doesn't work for other Windows variants.
 
   1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.
@@ -95,6 +95,6 @@ cite it like this:
 ,author = "Jason Rennie"
 ,title = "WordNet::QueryData: a {P}erl module for accessing the {W}ord{N}et 
 database"
-,howpublished = "http://www.ai.mit.edu/people/jrennie/WordNet"
+,howpublished = "http://people.csail.mit.edu/~jrennie/WordNet"
 ,year = 2000
 }

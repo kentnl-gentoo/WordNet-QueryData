@@ -1,3 +1,10 @@
+2004-07-14  Jason Rennie <jrennie@csail.mit.edu>
+
+	* release 1.33
+	* QueryData.pm: Update "LOCATING THE WORDNET DATABASE"
+	documentation (kudos to Jason R Michelizzi for pointing out that
+	this needed updating)
+
 2003-10-08  Jason R Michelizzi <mich0212@d.umn.edu>
 
 	* release 1.31
