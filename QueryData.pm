@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.2 1999/09/15 19:53:50 jrennie Exp $
+# $Id: QueryData.pm,v 1.4 2000/02/02 16:55:48 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.2 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.4 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -138,10 +138,12 @@ sub lower
 sub _initialize
 {
     my $self = shift;
+    print STDERR "Loading WordNet data, please wait..." if ($self->{verbose});
     # Load morphology exclusion mapping
     $self->load_exclusions ();
     $self->load_index ();
     $self->open_data ();
+    warn ".\nDone.\n" if ($self->{verbose});
 }
 
 sub new
@@ -179,6 +181,7 @@ sub load_exclusions
     my $self = shift;
     my ($exc, $word, $i);
 
+    print STDERR "Morphological Exceptions..." if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
 	open (FILE, $self->{wordnet_dir}."/$exc_file[$i]")
@@ -201,6 +204,7 @@ sub load_index
     my $self = shift;
     my ($i, $j);
 
+    print STDERR "Index..." if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
 	open (FILE, $self->{wordnet_dir}."/$index_file[$i]")
@@ -234,6 +238,7 @@ sub open_data
     my $self = shift;
     my $i;
 
+    print STDERR "Data Files..." if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
 	$self->{data_fh}->[$i] = new FileHandle "<".$self->{wordnet_dir}."/$data_file[$i]";
@@ -246,8 +251,13 @@ sub open_data
 # Generate list of all possible forms of how word may be found in WordNet
 sub forms
 {
-    my ($self, $word, $pos) = @_;
+    my ($self, $string) = @_;
     my ($i, $j);
+
+    # The query string (word, pos and sense #)
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+    warn "Sense number is ignored in calls to 'forms'\n" if defined $sense;
+    print STDERR "forms: WORD=$word POS=$pos\n" if ($self->{verbose});
 
     die "QueryData: \"$pos\" not a legal part of speech!\n"
 	if (!defined ($pos_num{$pos}));
@@ -255,8 +265,6 @@ sub forms
 
     # Canonicalize word
     $word = lower ($word);
-    print STDERR "forms ($word, $pos)\n" if ($self->{verbose});
-    return $self->{morph_exc}->[$pos]->{$word} if (defined ($self->{morph_exc}->[$pos]->{$word}));
 
     my @token = split (/\s+/, $word);
     my @token_form;
@@ -264,7 +272,11 @@ sub forms
     # Find all possible forms for all tokens
     for ($i=0; $i < @token; $i++)
     {
+	# always include word as it appears in original 'forms' query
 	push @{$token_form[$i]}, $token[$i];
+	# also include entry from morphological exceptions, if it exists
+	push @{$token_form[$i]}, $self->{morph_exc}->[$pos]->{$token[$i]} if (defined ($self->{morph_exc}->[$pos]->{$token[$i]}));
+
 	if ($pos_num{$pos} == 1)
 	{
 	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)s$/);
@@ -318,7 +330,13 @@ sub forms
 	}
 	# If we had to reset every index, we have tried all possibilities
 	last if ($i >= @token);
-    }	
+    }
+
+    # finally, add exception entry for entire collocation if query
+    # word has more than one segment/token and an exception entry exists
+    push @word_form, $self->{morph_exc}->[$pos]->{$word}
+        if (@token > 1 and (defined ($self->{morph_exc}->[$pos]->{$word}))); 
+    print STDERR "Word_form array= @word_form\n" if $self->{verbose};
     return @word_form;
 }
 
@@ -485,7 +503,8 @@ sub query
 	    if (!$pos_num{$pos});
 
 	my (@rtn, $i);
-	my @pointers = unpack "i*", $self->{index}->[$pos_num{$pos}]->{$word};
+	my @pointers = unpack "i*", $self->{index}->[$pos_num{$pos}]->{$word}
+	    if defined $self->{index}->[$pos_num{$pos}]->{$word};
 	my $sense_cnt = scalar @pointers;
 	for ($i=0; $i < @pointers; $i++) {
 	    push @rtn, "$string\#".($i+1);
@@ -519,6 +538,24 @@ sub query
     }
 }
 
+sub valid_forms
+{
+    my ($self, $string) = @_;
+    my (@possible_forms, @valid_forms);
+    
+    # get word, pos, and sense from second argument:
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+    warn "Sense number is ignored in calls to 'valid_forms'\n"
+	if (defined $sense);
+    warn "Part of speech is required in call to 'valid_forms'\n"
+	if (! defined $pos);
+    
+    @possible_forms = $self->forms ("$word#$pos");
+    @valid_forms = grep $self->query("$_#$pos"), @possible_forms;
+
+    return @valid_forms;
+}
+
 # module must return true
 1;
 __END__
@@ -533,22 +570,25 @@ WordNet::QueryData - direct perl interface to WordNet database
 
 =head1 SYNOPSIS
 
-use WordNet::QueryData;
+  use WordNet::QueryData;
 
-# Load index, mophological exclusion files---slow process
-my $wn = WordNet::QueryData->new ("/usr/local.foo/dict", 1);
+  # Load index, mophological exclusion files---slow process
+  my $wn = WordNet::QueryData->new ("/usr/local.foo/dict", 1);
 
-# Possible forms that you might find 'ghostliest' in WordNet
-print "Ghostliest-> ", join (", ", $wn->forms ("ghostliest", 3)), "\n";
+  # Possible forms that you might find 'ghostliest' in WordNet
+  print "Ghostliest-> ", join (", ", $wn->forms ("ghostliest#3")), "\n";
 
-# Synset of cat, sense #7
-print "Cat#7-> ", join (", ", $wn->query ("cat#n#7", "synset")), "\n";
+  # Synset of cat, sense #7
+  print "Cat#7-> ", join (", ", $wn->query ("cat#n#7", "synset")), "\n";
 
-# Hyponyms of cat, sense #1 (house cat)
-print "Cat#1-> ", join (", ", $wn->query ("cat#n#1", "hyponym")), "\n";
+  # Hyponyms of cat, sense #1 (house cat)
+  print "Cat#1-> ", join (", ", $wn->query ("cat#n#1", "hyponym")), "\n";
 
-# Senses of run as a verb
-print "Run->", join (", ", $wn->query ("run#verb")), "\n";
+  # Senses of run as a verb
+  print "Run->", join (", ", $wn->query ("run#verb")), "\n";
+
+  # Base forms of the verb lay down actually found in WordNet
+  print "lay down-> ", join (", ", $wn->valid_baseforms ("lay down#v")), "\n";
 
 =head1 DESCRIPTION
 
@@ -586,9 +626,9 @@ object functions that you might want to use, 'forms' and 'query'.
 relations.  It accepts a query string and a relation.  The query
 string may be at one of three specification levels:
 
-1) WORD (e.g. dog)
-2) WORD#POS (e.g. house#noun)
-3) WORD#POS#SENSE (e.g. ghostly#adj#1)
+  1) WORD (e.g. dog)
+  2) WORD#POS (e.g. house#noun)
+  3) WORD#POS#SENSE (e.g. ghostly#adj#1)
 
 WORD is simply an english word.  Spaces should be used to separate
 tokens (not underscores as is used in the WordNet database).  Case
@@ -599,39 +639,42 @@ integrate this with 'query' so that no manual search is necessary.
 
 POS is the part of speech.  Use 'n' for noun, 'v' for verb, 'a' for
 adjective and 'r' for adverb.  You may also use full names and some
-abbreviations (as above and in test.pl).
+abbreviations (as above and in test.pl).  POS is optional for calls to
+the query method, and required for calls to the forms and the
+valid_baseforms methods.  SENSE is the sense number that uniquely
+identifies the sense of the word.  It is ignored in calls to the forms
+and valid_baseforms methods.
 
-SENSE is the sense number that uniquely identifies the sense of the word.
+Executing 'query' with only a WORD will return a list of WORD#POS
+strings, one for each part of speech that the word is used as.
+Executing query with WORD#POS will return a list of WORD#POS#SENSE
+strings.  These first two formats are essentially used to search for
+the sense for which you are looking.  When making such a query, no
+relation (2nd argument) should be passed to 'query'.  The third
+format, WORD#POS#SENSE allows you to examine the WordNet relations.
+It requires a second argument, a relation, which may be one of the
+following:
 
-Query #1 will return a list of WORD#POS strings, one for each part of
-speech that the word is used as.  Query #2 will return a list of
-WORD#POS#SENSE strings.  Query #1 and #2 are essentially used to
-search for the sense for which you are looking.  When making such a
-query, no relation (2nd argument) should be passed to 'query'.  Query
-#3 is the interesting one and allows you to make use of all of the
-WordNet relations.  It requires a second argument, a relation, which
-may be one of the following:
-
-syns - synset words
-ants - antonyms
-hype - hypernyms
-hypo - hyponyms
-mmem - member meronyms
-msub - substance meronyms
-mprt - part meronyms
-mero - all meronyms
-hmem - member holonyms
-hsub - substance holonyms
-hprt - part holonyms
-holo - all holonyms
-attr - attributes (?)
-enta - entailment (verbs only)
-caus - cause (verbs only)
-also - also see
-vgrp - verb group (verbs only)
-sim - similar to (adjectives only)
-part - participle of verb (adjectives only)
-pert - pertainym (pertains to noun) (adjectives only)
+  syns - synset words
+  ants - antonyms
+  hype - hypernyms
+  hypo - hyponyms
+  mmem - member meronyms
+  msub - substance meronyms
+  mprt - part meronyms
+  mero - all meronyms
+  hmem - member holonyms
+  hsub - substance holonyms
+  hprt - part holonyms
+  holo - all holonyms
+  attr - attributes (?)
+  enta - entailment (verbs only)
+  caus - cause (verbs only)
+  also - also see
+  vgrp - verb group (verbs only)
+  sim - similar to (adjectives only)
+  part - participle of verb (adjectives only)
+  pert - pertainym (pertains to noun) (adjectives only)
 
 Longer names are also allowed.  Each relation returns a list of
 strings.  Each string is in WORD#POS#SENSE form and corresponds to a
@@ -642,6 +685,11 @@ returned array to get the words for a relation).  In the case of
 relations like 'hype' and 'hypo', query returns only the immediate
 hypernyms or hyponyms.  You can use 'query' recursively to get a full
 hyper/hyponym tree.
+
+Forms returns a superset of all possible forms of the query word that might be
+found in WordNet by performing some simple stemming on the word as entered
+in the query.  valid_baseforms returns the set of these that are base
+forms actually present in the distribution of WordNet loaded.
 
 =head1 NOTES
 
@@ -665,6 +713,12 @@ http://www.ai.mit.edu/~jrennie/WordNet/
 =head1 LOG
 
 $Log: QueryData.pm,v $
+Revision 1.4  2000/02/02 16:55:48  jrennie
+*** empty log message ***
+
+Revision 1.3  1999/10/22 21:01:04  jrennie
+update documentation to look a bit nicer
+
 Revision 1.2  1999/09/15 19:53:50  jrennie
 add url
 

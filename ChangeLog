@@ -1,3 +1,15 @@
+2000-02-02  Keith J. Miller  <keith@mitre.org>
+
+	* QueryData.pm (forms): make consistent with query syntax;
+	don't return immediately if we find a morph exclusion entry
+	* QueryData.pm (valid_forms): new function
+	* test.pl: make tests consistent with changes, add checks for
+	new function
+
+1999-10-22  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+
+	* QueryData.pm: update documentation to look a bit nicer
+
 1999-09-15  Jason Rennie  <jrennie@karhu.ai.mit.edu>
 
 	* README: make specific to QueryData
