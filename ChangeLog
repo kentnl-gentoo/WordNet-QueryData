@@ -1,3 +1,15 @@
+2003-10-08  Jason R Michelizzi <mich0212@d.umn.edu>
+
+	* release 1.31
+	* QueryData.pm: add new symbols to %relNameSym and %relSymName;
+	QueryData should work perfectly with WordNet 2.0 now.
+	Changed documentation to reflect this.
+	* test.pl: updated tests for 2.0
+
+2003-09-25  Jason Rennie <jrennie@ai.mit.edu>
+
+	* test.pl: move "cat#n" test to version-specific area (8 senses in 2.0)
+	
 2003-09-17  Jason R Michelizzi <mich0212@d.umn.edu>
 
 	* release 1.30

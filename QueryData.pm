@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.30 2003/09/17 15:17:48 jrennie Exp $
+# $Id: QueryData.pm,v 1.31 2003/10/08 19:22:49 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.30 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.31 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -102,7 +102,16 @@ my %relNameSym = ('ants' => {'!'=>1},
 		  'vgrp' => {'$'=>1}, # '$' Hack for font-lock in emacs
 		  'sim' => {'&'=>1},
 		  'part' => {'<'=>1},
-		  'pert' => {'\\'=>1});
+		  'pert' => {'\\'=>1},
+		  'deri' => {'+'=>1},
+		  'domn' => {';c'=>1, ';r'=>1, ';u'=>1},
+		  'dmnc' => {';c'=>1},
+		  'dmnr' => {';r'=>1},
+		  'dmnu' => {';u'=>1},
+		  'domt' => {'-c'=>1, '-r'=>1, '-u'=>1},
+		  'dmtc' => {'-c'=>1},
+		  'dmtr' => {'-r'=>1},
+		  'dmtu' => {'-u'=>1});
 
 # Mapping from WordNet symbols to short relation names
 my %relSymName = ('!'  => 'ants',
@@ -121,7 +130,13 @@ my %relSymName = ('!'  => 'ants',
 		  '$' => 'vgrp', # '$' Hack to make font-lock work in emacs
 		  '&'  => 'sim',
 		  '<'  => 'part',
-		  '\\' => 'pert');
+		  '\\' => 'pert',
+		  '-u' => 'dmtu',
+		  '-r' => 'dmtr',
+		  '-c' => 'dmtc',
+		  ';u' => 'dmnu',
+		  ';r' => 'dmnr',
+		  ';c' => 'dmnc');
 
 # DEPRECATED!  DO NOT USE!  Use relSymName instead.
 my %relation_sym = ('!'  => 'ants',
@@ -149,8 +164,8 @@ my @dataFileUnix = ("", "data.noun", "data.verb", "data.adj", "data.adv");
 my @indexFilePC = ("", "noun.idx", "verb.idx", "adj.idx", "adv.idx");
 my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
 
-my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-1.7.1";
-my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\1.7.1";
+my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-2.0";
+my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\2.0";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
@@ -297,8 +312,8 @@ sub loadIndex#
 	    last if (!$line);
 	}
     }
-    warn "*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.6");
-    warn "*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.7");
+    warn "\n*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.6");
+    warn "\n*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.7");
 }
 
 # Open data files and return file handles
@@ -1040,8 +1055,8 @@ you invoke the "new" function.
 QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  By default, QueryData assumes that WordNet data files
 are located in WNHOME/WNSEARCHDIR (WNHOME\WNSEARCHDIR on a PC), where
-WNHOME defaults to "/usr/local/WordNet-1.7.1" on Unix and "C:\Program
-Files\WordNet\1.7.1" on a PC.  WNSEARCHDIR defaults to "dict".
+WNHOME defaults to "/usr/local/WordNet-2.0" on Unix and "C:\Program
+Files\WordNet\2.0" on a PC.  WNSEARCHDIR defaults to "dict".
 Normally, all you have to do is to set the WNHOME variable to the
 location where you unpacked your WordNet distribution.  The database
 files are always unpacked to the "dict" subdirectory.
@@ -1061,9 +1076,9 @@ There are two primary query functions, 'querySense' and 'queryWord'.
 querySense accesses relations between senses; queryWord accesses
 relations between words.  Most relations (including hypernym, hyponym,
 meronym, holonym) are between senses.  Those between words include
-"also see", antonym, pertainym and "participle of verb."  The glossary
-definition of a sense and the words in a synset are obtained via
-querySense.
+"also see", antonym, pertainym, "participle of verb", and derived forms.
+The glossary definition of a sense and the words in a synset are obtained
+via querySense.
 
 Both functions take as their first argument a query string that takes
 one of three types:
@@ -1072,10 +1087,10 @@ one of three types:
   (2) word#pos (e.g. "house#n")
   (3) word#pos#sense (e.g. "ghostly#a#1")
 
-Types (1) or (2) passed to querySense will return a list of possible
-query strings at the next level of specificity.  Type (1) passed to
-queryWord will do the same.  When type (3) is passed to querySense, it
-requires a second argument, a relation.  Possible relations are:
+Types (1) or (2) passed to querySense or queryWord will return a list of
+possible query strings at the next level of specificity.  When type (3)
+is passed to querySense or queryWord, it requires a second argument, a
+relation.  Possible relations are:
 
   syns - synset words
   ants - antonyms
@@ -1094,14 +1109,22 @@ requires a second argument, a relation.  Possible relations are:
   caus - cause (verbs only)
   also - also see
   vgrp - verb group (verbs only)
-  sim - similar to (adjectives only)
+  sim  - similar to (adjectives only)
   part - participle of verb (adjectives only)
   pert - pertainym (pertains to noun) (adjectives only)
   glos - word definition
+  deri - derived forms (nouns and verbs only)
+  domn - domain - all
+  dmnc - domain - category
+  dmnu - domain - usage
+  dmnr - domain - region
+  domt - member of domain - all (nouns only)
+  dmtc - member of domain - category (nouns only)
+  dmtu - member of domain - usage (nouns only)
+  dmtr - member of domain - region (nouns only)
 
-When called in this manner, querySense will return a list of related
-senses.  When queryWord is called with a type (2), it requires a
-relation and will return a list of related words (type (2) strings).
+When called in this manner, querySense and queryWord will return a list of
+related senses.
 
 =head2 OTHER FUNCTIONS
 

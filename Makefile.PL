@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 # $wnHomePC).  These need to be synchronized.  I need to import those
 # variables from QueryData.pm.
 
-die "*** Please set the WNHOME environment variable to the location of your\n***   WordNet installation.  QueryData.pm will not work otherwise.\n*** Alternatively, you can make the installation in the default\n***   location, C:\\Program Files\\WordNet\\1.7.1 on Windows, or /usr/local/WordNet-1.7.1 on unix.\n" unless exists $ENV{WNHOME} or -d "C:\\Program Files\\WordNet\\1.7.1" or -d "/usr/local/WordNet-1.7.1";
+die "*** Please set the WNHOME environment variable to the location of your\n***   WordNet installation.  QueryData.pm will not work otherwise.\n*** Alternatively, you can make the installation in the default\n***   location, C:\\Program Files\\WordNet\\2.0 on Windows, or /usr/local/WordNet-2.0 on unix.\n" unless exists $ENV{WNHOME} or -d "C:\\Program Files\\WordNet\\2.0" or -d "/usr/local/WordNet-2.0";
 
 WriteMakefile(
     'dist'      => { 'COMPRESS'  => 'gzip', 'SUFFIX'    => '.gz', },

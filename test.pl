@@ -2,10 +2,13 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.27 2003/09/17 15:17:48 jrennie Exp $
+# $Id: test.pl,v 1.30 2003/10/08 19:22:49 jrennie Exp $
 
 my $i = 1;
-BEGIN { $| = 1; print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\n"; }
+BEGIN { 
+    $| = 1;
+    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..47\n";
+}
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
 $loaded = 1;
@@ -33,13 +36,13 @@ scalar $wn->forms ("fussing#2") == 3
 scalar $wn->forms ("fastest#3") == 3
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-scalar $wn->querySense ("cat") == 2
+scalar $wn->querySense ("rabbit") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-scalar $wn->querySense ("cat#n") == 7
+scalar $wn->querySense ("rabbit#n") == 3
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->querySense ("rabbit#n#1", "hypo") == 6
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-scalar $wn->querySense ("cat#n#1", "hypo") == 2
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 # check that underscore is added, syntactic marker is removed
 ($wn->querySense("infra dig"))[0] eq "infra_dig#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -144,5 +147,40 @@ if ($ver eq "1.6") {
     scalar $wn->offset("0#n#1") == 11596022
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->forms("axes#1") == 3
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+} elsif ($ver eq "2.0") {
+    scalar $wn->querySense("cat#noun#8", "syns") == 6
+        ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->listAllWords("noun") == 114648
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    $wn->offset("child#n#1") == 9284669
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->querySense("car#n#1", "mero") == 29
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->querySense("run#verb") == 41
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->offset("0#n#1") ==  12967124
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->forms("axes#1") == 3
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personify#v#3'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->queryWord('shower#v#3', 'deri'))[0] eq 'shower#n#1'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->queryWord('concentrate#v#8', 'deri'))[0] eq 'concentration#n#4'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('curling#n#1', 'domn'))[0] eq 'Scotland#n#1'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('sumo#n#1', 'dmnr'))[0] eq "Japan#n#2"
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#1'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('bloody#r#1', 'dmnu'))[0] eq 'intensifier#n#1'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('matrix_algebra#n#1', 'domt'))[0] eq "diagonalization#n#1"
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('idiom#n#2', 'dmtu'))[0] eq 'euphonious#a#2'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->querySense('manchuria#n#1', 'dmtr'))[0] eq 'Chino-Japanese_War#n#1'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 }
