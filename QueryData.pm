@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.23 2002/06/21 17:23:49 jrennie Exp $
+# $Id: QueryData.pm,v 1.24 2002/06/27 11:38:39 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.23 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.24 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -505,7 +505,7 @@ sub getWordPointers#
 	# $st "source/target" is 2-part hexadecimal
 	($sym, $offset, $pos, $st, $line) = split(/\s+/, $line, 5);
 	next if (!$st);
-	my ($src, $tgt) = ($st =~ m/(\d{2})(\d{2})/);
+	my ($src, $tgt) = ($st =~ m/([0-9a-f]{2})([0-9a-f]{2})/);
 	push @rtn, $self->getWord($offset, $pos, hex($tgt))
 	    if (defined($ptr->{$sym}) and ($word eq $word[$src-1]));
     }
