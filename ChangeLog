@@ -1,3 +1,8 @@
+2002-03-21  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (offset): use 'defined' to check for good query string
+	* release 1.14
+
 2001-11-25  Jason Rennie <jrennie@ai.mit.edu>
 
 	* QueryData.pm (get_word): eliminate syntactic marker (previously

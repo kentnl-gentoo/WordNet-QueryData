@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.13 2001/11/25 08:19:33 jrennie Exp $
+# $Id: QueryData.pm,v 1.14 2002/03/21 11:50:58 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.13 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.14 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -445,10 +445,11 @@ sub offset
 
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
-
+    
     print STDERR "offset: WORD=$word POS=$pos SENSE=$sense\n"
 	if ($self->{verbose});
-    if (!$sense || !$pos || !$word || !$pos_num{$pos})
+    if (!defined($sense) or !defined($pos) or !defined($word) 
+	or !defined($pos_num{$pos}))
     {
 	warn "Bad query string: $string.  I need a fully qualified sense (WORD#POS#SENSE)\n";
 	return;

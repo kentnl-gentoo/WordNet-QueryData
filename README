@@ -20,7 +20,7 @@ PREREQUISITES
 -------------
 
 Perl5
-WordNet 1.6 (http://www.cogsci.princeton.edu/~wn/obtain/)
+WordNet 1.6 or 1.7 (http://www.cogsci.princeton.edu/~wn/obtain/)
 
 Strictly speaking, only the WN 1.6 data files are required (everything
 in the 'dict' directory), but you might as well install all of WN 1.6
@@ -92,15 +92,14 @@ for information about changes to the code.
 WordNet perl modules can be found at
 http://www.ai.mit.edu/~jrennie/WordNet/
 
-There is a mailing list, wn-perl@egroups.com, for the discussion of
-WordNet::QueryData.  Visit
-http://www.egroups.com/group/wn-perl/info.html to see past messages
-and for information on how to subscribe.
+There is a mailing list, http://groups.yahoo.com/group/wn-perl, for
+the discussion of WordNet::QueryData.  Send mail to
+wn-perl-subscribe@yahoogroups.com to subscribe.
 
 COPYRIGHT
 ---------
 
-Copyright (C) 2000,2001 Jason Rennie <jrennie@ai.mit.edu> All rights
+Copyright (C) 2000,2001,2002 Jason Rennie <jrennie@ai.mit.edu> All rights
 reserved.
 
 This module is free software; you can redistribute it and/or modify
