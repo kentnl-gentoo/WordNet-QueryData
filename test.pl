@@ -1,15 +1,15 @@
-#!/usr/bin/perl -w -I/tmp
+#!/usr/bin/perl -w
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.9 2001/11/22 17:48:02 jrennie Exp $
+# $Id: test.pl,v 1.11 2001/11/25 08:21:05 jrennie Exp $
 
 ######################### We start with some black magic to print on failure.
 
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..20\n"; }
+BEGIN { $| = 1; print "1..25\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use WordNet::QueryData;
 $loaded = 1;
@@ -72,31 +72,28 @@ scalar $wn->query ("child#n#1", "syns") == 12
     and ([$wn->valid_forms ("farther#4")]->[1]) eq "far")
     ? print "ok 16\n" : print "not ok 16\n";
 
-print "Tests 17-20 only work for WordNet 1.6\n";
-
-scalar $wn->query ("run#verb") == 42
+($wn->query("authority#n#4", "attr"))[0] eq "certain#a#2"
     ? print "ok 17\n" : print "not ok 17\n";
+
+print "Tests 18-21 only work for WordNet 1.6\n";
 
 $wn->offset ("child#n#1") == 7153837
     ? print "ok 18\n" : print "not ok 18\n";
-
 scalar $wn->query ("car#n#1", "mero") == 29
     ? print "ok 19\n" : print "not ok 19\n";
-
 scalar $wn->list_all_words("noun") == 94474
     ? print "ok 20\n" : print "not ok 20\n";
-
-print "Tests 21-24 only work for WordNet 1.7\n";
-
-scalar $wn->query ("run#verb") == 41
+scalar $wn->query ("run#verb") == 42
     ? print "ok 21\n" : print "not ok 21\n";
+
+print "Tests 22-25 only work for WordNet 1.7\n";
 
 scalar $wn->list_all_words("noun") == 107930
     ? print "ok 22\n" : print "not ok 22\n";
-
 $wn->offset ("child#n#1") == 7964378
     ? print "ok 23\n" : print "not ok 23\n";
-
 scalar $wn->query ("car#n#1", "mero") == 28
     ? print "ok 24\n" : print "not ok 24\n";
+scalar $wn->query ("run#verb") == 41
+    ? print "ok 25\n" : print "not ok 25\n";
 

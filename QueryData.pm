@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.12 2001/11/22 17:48:01 jrennie Exp $
+# $Id: QueryData.pm,v 1.13 2001/11/25 08:19:33 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.12 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.13 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -399,7 +399,7 @@ sub get_all_words
     foreach my $word (@words)
     {
 	$word = lower ($word);
-        # fix problems with "new to(p)" by removing "(p)"
+	# Eliminate syntactic marker (if any)
         $word =~ s/\(.*\)$//; 
 	my @offset_array = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});
 	for ($i=0; $i < @offset_array; $i++)
@@ -424,7 +424,8 @@ sub get_word
     my ($offset, $word);
     ($offset, undef, undef, undef, $word) = split (/\s+/);
     $word = lower ($word);
-    
+    # Eliminate syntactic marker (if any)
+    $word =~ s/\(.*\)$//; 
     print STDERR "Offsets differ INDEX=$index_offset DATA=$offset\n"
 	if ($index_offset != $offset);
     my @offset_array = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});

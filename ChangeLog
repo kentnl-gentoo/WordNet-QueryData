@@ -1,9 +1,18 @@
+2001-11-25  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (get_word): eliminate syntactic marker (previously
+	fixed this in get_all_words); bug discovered by Satanjeev Banerjee
+	<bane0025@d.umn.edu>
+	* test.pl: add syntactic marker check (authority#n#4)
+	* release 1.13
+
 2001-11-22  Jason Rennie <jrennie@ai.mit.edu>
 
 	* test.pl ($wnDir): use WNHOME environment variable
 	* test.pl: update tests for WordNet 1.7; identify which tests work
 	for 1.6 and which work for 1.7
 	* README (CUSTOM DIRECTORY): new section
+	* release 1.12
 
 2001-11-22  Eric Joanis <joanis@cs.toronto.edu>
 
