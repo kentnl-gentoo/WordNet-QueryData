@@ -2,7 +2,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.17 2002/06/11 13:08:35 jrennie Exp $
+# $Id: test.pl,v 1.18 2002/06/11 14:41:31 jrennie Exp $
 
 my $i = 1;
 BEGIN { $| = 1; print "v1.6: 1..24\nv1.7: 1..26\n"; }
@@ -52,7 +52,7 @@ scalar $wn->querySense ("cat#noun#7", "syns") == 5
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->querySense ("lay down#v#1", "syns"))[0] eq "lay_down#v#1"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-scalar $wn->validForms ("lay down#v") == 1
+scalar $wn->validForms ("lay down#v") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->validForms ("checked#v") == 1
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -63,9 +63,9 @@ my ($foo) = $wn->querySense ("cat#n#1", "glos");
 scalar $wn->querySense ("child#n#1", "syns") == 12
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-(([$wn->validForms ("lay down#2")]->[0]) eq "lay_down#v"
-    and ([$wn->validForms ("ghostliest#3")]->[0]) eq "ghostly#a"
-    and ([$wn->validForms ("farther#4")]->[0]) eq "far#r")
+(([$wn->validForms ("lay down#2")]->[1]) eq "lie_down#2"
+    and ([$wn->validForms ("ghostliest#3")]->[0]) eq "ghostly#3"
+    and ([$wn->validForms ("farther#4")]->[1]) eq "far#4")
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 ($wn->querySense("authority#n#4", "attr"))[0] eq "certain#a#2"
@@ -91,6 +91,6 @@ if ($ver eq "1.6") {
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->offset("0#n#1") == 11356314
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->forms("axes#1") == 2
+    scalar $wn->forms("axes#1") == 3
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 }

@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.19 2002/06/11 13:08:35 jrennie Exp $
+# $Id: QueryData.pm,v 1.21 2002/06/11 14:41:31 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.19 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.21 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -328,18 +328,19 @@ sub removeDuplicates
     }
 }
 
-# transforms ending according to rules of detachment
-# (http://www.cogsci.princeton.edu/~wn/doc/man1.7/morphy.htm).
-# Assumes a single token (no collocations).
-# "#pos#sense" qualification NOT appended to returned words
-sub tokenDetach
+# - transforms ending according to rules of detachment
+#   (http://www.cogsci.princeton.edu/~wn/doc/man1.7/morphy.htm).
+# - assumes a single token (no collocations).
+# - "#pos#sense" qualification NOT appended to returned words
+# - always returns original word
+sub tokenDetach#
 {
     my ($self, $string) = @_;
     # The query string (word, pos and sense #)
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(forms) Sense number ignored\n" if (defined($sense));
     die "(tokenDetach) bad part-of-speech: pos=$pos word=$word sense=$sense" if (!defined($pos) or !defined($pos_num{$pos}));
-    my @detach; # list of modified words
+    my @detach = ($word); # list of modified words
     if ($pos_num{$pos} == 1)
     {
 	push @detach, $1 if ($word =~ m/^(\w+)s$/);
@@ -371,67 +372,64 @@ sub tokenDetach
     return @detach;
 }
 
+# sub-function of forms; do not use unless you know what you're doing
+sub _forms#
+{
+    # Assume that word is canonicalized, pos is number
+    my ($self, $word, $pos) = @_;
+
+    warn "(_forms) WORD=$word POS=$pos\n" if ($self->{verbose});
+    # if word is in morph exclusion table, return that entry
+    return ($word, @{$self->{morph_exc}->[$pos]->{$word}}) if (defined ($self->{morph_exc}->[$pos]->{$word}));	
+
+    my @token = split (/\_/, $word);
+    # If there is only one token, process via rules of detachment
+    return tokenDetach ($self, $token[0]."#".$pos) if (@token == 1);
+    # Otherwise, process each token individually, then string together colloc's
+    my @forms;
+    for (my $i=0; $i < @token; $i++) {
+	push @{$forms[$i]}, _forms ($self, $token[$i], $pos);
+    }
+    # Generate all possible token sequences (collocations)
+    my @rtn;
+    my @index;
+    for (my $i=0; $i < @token; $i++) { $index[$i] = 0; }
+    while (1) {
+	# String together one sequence of possibilities
+	my $colloc = $forms[0]->[$index[0]];
+	for (my $i=1; $i < @token; $i++) {
+	    $colloc .= "_".$forms[$i]->[$index[$i]];
+	}
+	push @rtn, $colloc;
+	# think "adder" (computer architechture)
+	my $i;
+	for ($i=0; $i < @token; $i++) {
+	    last if (++$index[$i] < @{$forms[$i]});
+	    $index[$i] = 0;
+	}
+	# If we had to reset every index, we're done
+	last if ($i >= @token);
+    }
+    return @rtn;
+}
 
 # Generate list of all possible forms of how word may be found in WordNet
 sub forms#
 {
     my ($self, $string) = @_;
-
-    my @rtn;
     # The query string (word, pos and sense #)
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(forms) Sense number ignored\n" if (defined($sense));
     warn "(forms) WORD=$word POS=$pos\n" if ($self->{verbose});
     die "(forms) Bad part-of-speech: pos=$pos" if (!defined($pos) or !defined($pos_num{$pos}));
-    $pos = $pos_num{$pos};
-    $word = lower ($word);
-
-    # if word is in morph exclusion table, return only that entry
-    if (defined ($self->{morph_exc}->[$pos]->{$word})) {
-	my @exc = @{$self->{morph_exc}->[$pos]->{$word}};
-	for (my $i=0; $i < @exc; ++$i) {
-	    $exc[$i] .= "#".$pos_map{$pos};
-	}
-	push @rtn, @exc;
-    } else {
-	# ISSUE: we don't check morphological exclusion table for components
-	# of the colocation.  This may be bad---hard to say from the "morphy"
-	# web page
-
-	# otherwise, use rules of detachment to find forms
-	my @token = split (/\s+/, $word);
-	my @detach;
-	for (my $i=0; $i < @token; $i++)
-	{
-	    push @{$detach[$i]}, $token[$i];
-	    push @{$detach[$i]}, tokenDetach ($self, $token[$i]."#".$pos);
-	}
-	# Generate all possible token sequences (collocations)
-	my @index; for (my $i=0; $i < @token; $i++) { $index[$i] = 0; }
-	while (1) {
-	    my $colloc;
-	    # String together one sequence of possibilities
-	    for (my $i=0; $i < @token; $i++) {
-		$colloc .= "_".$detach[$i]->[$index[$i]] if (defined($colloc));
-		$colloc = $detach[$i]->[$index[$i]] if (!defined($colloc));
-	    }
-	    push @rtn, $colloc."#".$pos_map{$pos};
-	    
-	    # think "adder" (computer architechture)
-	    my $i;
-	    for ($i=0; $i < @token; $i++) {
-		$index[$i]++;
-		last if ($index[$i] < @{$detach[$i]});
-		$index[$i] = 0;
-	    }
-	    # If we had to reset every index, we're done
-	    last if ($i >= @token);
-	}
+    my @rtn = _forms ($self, lower($word), $pos_num{$pos});
+    for (my $i=0; $i < @rtn; ++$i) {
+	$rtn[$i] .= "\#$pos";
+	$rtn[$i] = lower ($rtn[$i]);
     }
-    # make sure that all the words are lower case and use underscores '_'
-    for (my $i=0; $i < @rtn; ++$i) { $rtn[$i] = lower($rtn[$i]); }
     return @rtn;
 }
+
 
 # DEPRECATED!  DO NOT USE!  Use "getSensePointers" instead.
 sub get_pointers

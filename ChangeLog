@@ -1,5 +1,19 @@
 2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
 
+	* release 1.21
+	* test.pl: make tests reflect changes
+	* QueryData.pm (_forms): return original word (in addition to morph
+	exclusion or rules of detachment forms)
+
+2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.20
+	* QueryData.pm (_forms): new function
+	* QueryData.pm (forms): check morph exclusions for tokens of
+	collocations; use a recursive organization.
+
+2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+
 	* release 1.19
 	* test.pl: add tests to cover changes
 	* QueryData.pm (tokenDetach): new function
