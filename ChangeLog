@@ -1,6 +1,20 @@
+2002-04-02  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm: revise man page
+	* test.pl: update numbering
+	* QueryData.pm (load_index): try both Unix and PC file names
+	* QueryData.pm (open_data): try both Unix and PC file names
+
+2002-04-01  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (load_exclusions): words may have multiple listed
+	exclusions in the *.exc files; fix code to read in all of them;
+	bug reported by Bano <satanjeev@yahoo.com>
+	
 2002-03-21  Jason Rennie <jrennie@ai.mit.edu>
 
-	* QueryData.pm (offset): use 'defined' to check for good query string
+	* QueryData.pm (offset): use 'defined' to check for good query string;
+	bug ("0#n#1") discovered by Bano <satanjeev@yahoo.com>
 	* release 1.14
 
 2001-11-25  Jason Rennie <jrennie@ai.mit.edu>

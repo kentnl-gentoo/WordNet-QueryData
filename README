@@ -1,17 +1,15 @@
 WordNet::QueryData perl module
 ------------------------------
 
-Provides an object-oriented perl interface to the full WordNet system.
-This is my second attempt at a perl interface to WN.  This draft
-includes full support for all parts of WordNet (nouns, verbs,
-adjectives and adverbs) and is very efficient after the initialization
-step (where index and morph. exc. files are loaded).  This
-initialization step will prove to be annoying if you simply want to
-'play' with WordNet.  On my PIII/500, it takes about 12 seconds and 16
-megs of memory to initialize.  After that, however, things should be
-blazingly fast and efficient.  All file access is done with fseek
-calls and takes full advantage of the static nature of the WordNet
-data.* files.
+WordNet::QueryData provides a direct interface to the WordNet database
+files.  It requires the WordNet package
+(http://www.cogsci.princeton.edu/~wn/).  It allows the user direct
+access to the full WordNet semantic lexicon.  All parts of speech are
+supported and access is generally very efficient because the index and
+morphical exclusion tables are loaded at initialization.  This
+initialization step is slow (appx. 10-15 seconds), but queries are
+very fast thereafter---thousands of queries can be completed every
+second.
 
 See the man page ('perldoc WordNet::QueryData' after having run
 'make') for information on all that is possible.
@@ -20,16 +18,17 @@ PREREQUISITES
 -------------
 
 Perl5
-WordNet 1.6 or 1.7 (http://www.cogsci.princeton.edu/~wn/obtain/)
+WordNet "Unix" Database Package version 1.6 or 1.7 (obtain from
+  http://www.cogsci.princeton.edu/~wn/obtain/)
 
-Strictly speaking, only the WN 1.6 data files are required (everything
-in the 'dict' directory), but you might as well install all of WN 1.6
-while you're at it.
+Strictly speaking, only data files are required (everything in the
+'dict' directory).
 
-BUILD & INSTALL
----------------
+BUILD & INSTALL (Unix)
+----------------------
 
-To put WordNet::QueryData in the standard place do:
+To install WordNet::QueryData to the standard place on a unix-like
+system, do:
 
 perl Makefile.PL
 make
@@ -42,9 +41,6 @@ location is /usr/local/dict.
 To install do:
 
 make install
-
-NOTE: The above has been tested with RedHat Linux and is likely to
-work under most unices.  See below for notes on a Windows install.
 
 CUSTOM DIRECTORY
 ----------------

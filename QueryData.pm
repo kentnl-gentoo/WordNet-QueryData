@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.14 2002/03/21 11:50:58 jrennie Exp $
+# $Id: QueryData.pm,v 1.16 2002/04/02 23:18:51 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.14 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.16 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -98,8 +98,12 @@ my $wordnet_dir = $ENV{"WNHOME"}."/dict";
 
 # WordNet data file names
 my @exc_file = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
-my @index_file = ("", "index.noun", "index.verb", "index.adj", "index.adv");
-my @data_file = ("", "data.noun", "data.verb", "data.adj", "data.adv");
+#my @index_file = ("", "index.noun", "index.verb", "index.adj", "index.adv");
+#my @data_file = ("", "data.noun", "data.verb", "data.adj", "data.adv");
+my @indexFileUnix = ("", "index.noun", "index.verb", "index.adj", "index.adv");
+my @dataFileUnix = ("", "data.noun", "data.verb", "data.adj", "data.adv");
+my @indexFilePC = ("", "noun.idx", "verb.idx", "adj.idx", "adv.idx");
+my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
 
 END { } # module clean-up code here (global destructor)
 
@@ -172,19 +176,19 @@ sub load_exclusions
     print STDERR "Morphological Exceptions...\n" if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
-	open (FILE, $self->{wordnet_dir}."/$exc_file[$i]")
-	    || die "Not able to open ".$self->{wordnet_dir}."/$exc_file[$i]: $!\n";
-	while (<FILE>)
+	my $file = $self->{wordnet_dir}."/$exc_file[$i]";
+	my $fh = new FileHandle($file) or die "Not able to open $file: $!";
+	while ($_ = <$fh>)
 	{
-	    my ($exc, $word);
-	    ($exc, $word) = $_ =~ m/^(\S+)\s+(\S+)/;
+	    my ($exc, @word) = split(/\s+/, $_);
+	    next if (!defined(@word));
 	    $exc = lower ($exc);
-	    $word = lower ($word);
-	    $self->{morph_exc}->[$i]->{$exc} = $word;
+	    for (my $i=0; $i < @word; ++$i) {
+		$word[$i] = lower($word[$i]);
+	    }
+	    @{$self->{morph_exc}->[$i]->{$exc}} = @word;
 	}
-	close (FILE);
     }
-    # Return reference to array of hash
 }
 
 sub load_index 
@@ -195,27 +199,34 @@ sub load_index
     print STDERR "Index...\n" if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
-	open (FILE, $self->{wordnet_dir}."/$index_file[$i]")
-	    || die "Not able to open ".$self->{wordnet_dir}."/$index_file[$i]: $!\n";
+	my $fh;
+	my $fileUnix = $self->{wordnet_dir}."/".$indexFileUnix[$i];
+	my $filePC = $self->{wordnet_dir}."/".$indexFilePC[$i];
+	my $file = $fileUnix;
+	$fh = new FileHandle($file);
+	if (!defined($fh)) {
+	    $file = $filePC;
+	    $fh = new FileHandle($file) if (!defined($fh));
+	}
+	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
+
 	# Throw away initial lines that begin with a space
-	while (<FILE>) { last if (m/^\S/); }
+	while ($_ = <$fh>) { last if (m/^\S/); }
 	# Process rest of file
 	while (1)
 	{
 	    my ($word, $pos, $poly_cnt, $pointer_cnt, @stuff) = split (/\s+/);
 	    # Canonicalize syntax of word
 	    $word = lower ($word);
-	    print STDERR "Incorrect part-of-speech for $word (file=",
-	      $index_file[$i], ", pos=$pos)\n" if ($pos ne $pos_map{$i});
+	    print STDERR "Incorrect part-of-speech for $word (file=$file, pos=$pos)\n" if ($pos ne $pos_map{$i});
 	    splice (@stuff, 0, $pointer_cnt);
 	    my ($sense_cnt, $tagsense_cnt, @synset_offset) = @stuff;
 
 	    $self->{"index"}->[$pos_num{$pos}]->{$word} = pack "i*", @synset_offset;
 	    # Get the next word
-	    $_ = <FILE>;
+	    $_ = <$fh>;
 	    last if (!$_);
 	}
-	close (FILE);
     }
 }
 
@@ -229,9 +240,13 @@ sub open_data
     print STDERR "Data Files...\n" if $self->{verbose};
     for ($i=1; $i <= 4; $i++)
     {
-	$self->{data_fh}->[$i] = new FileHandle "<".$self->{wordnet_dir}."/$data_file[$i]";
-	die "Not able to open ".$self->{wordnet_dir}."/$data_file[$i]: $!\n"
-	    if (!defined ($self->{data_fh}->[$i]));
+	my $fh;
+	my $fileUnix = $self->{wordnet_dir}."/".$dataFileUnix[$i];
+	my $filePC = $self->{wordnet_dir}."/".$dataFilePC[$i];
+	$fh = new FileHandle($fileUnix);
+	$fh = new FileHandle($filePC) if (!defined($fh));
+	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
+	$self->{data_fh}->[$i] = $fh;
     }
 }
 
@@ -282,7 +297,7 @@ sub forms
 	# always include word as it appears in original 'forms' query
 	push @{$token_form[$i]}, $token[$i];
 	# also include entry from morphological exceptions, if it exists
-	push @{$token_form[$i]}, $self->{morph_exc}->[$pos]->{$token[$i]} if (defined ($self->{morph_exc}->[$pos]->{$token[$i]}));
+	push @{$token_form[$i]}, @{$self->{morph_exc}->[$pos]->{$token[$i]}} if (defined ($self->{morph_exc}->[$pos]->{$token[$i]}));
 
 	if ($pos_num{$pos} == 1)
 	{
@@ -344,7 +359,7 @@ sub forms
 
     # finally, add exception entry for entire collocation if query
     # word has more than one segment/token and an exception entry exists
-    push @word_form, $self->{morph_exc}->[$pos]->{$word}
+    push @word_form, @{$self->{morph_exc}->[$pos]->{$word}}
         if (@token > 1 and (defined ($self->{morph_exc}->[$pos]->{$word}))); 
     print STDERR "Word_form array= @word_form\n" if ($self->{verbose});
     return @word_form;
@@ -638,7 +653,7 @@ WordNet::QueryData - direct perl interface to WordNet database
   use WordNet::QueryData;
 
   # Load index, mophological exclusion files (time-consuming process)
-  my $wn = WordNet::QueryData->new ("/usr/local/dict", 1);
+  my $wn = WordNet::QueryData->new;
 
   # Synset of cat, sense #7
   print "Cat#7-> ", join (", ", $wn->query ("cat#n#7", "syns")), "\n";
@@ -662,40 +677,31 @@ files.  It requires the WordNet package
 (http://www.cogsci.princeton.edu/~wn/).  It allows the user direct
 access to the full WordNet semantic lexicon.  All parts of speech are
 supported and access is generally very efficient because the index and
-morphical exclusion tables are loaded at initialization.  Things are
-more or less optimized for long sessions of queries---the 'new'
-invocation load the entire index table and all of the morphological
-exclusions.  My PII/400 takes about 15 seconds to do this.  Memory
-usage is on the order of 18 Megs.  If I get enough requests, I may
-work on making this a less demanding step.  However, once the index
-and morph. exc. files are loaded, queries are very fast.
+morphical exclusion tables are loaded at initialization.  This
+initialization step is slow (appx. 10-15 seconds), but queries are
+very fast thereafter---thousands of queries can be completed every
+second.
 
 =head1 USAGE
 
 To use the WordNet::QueryData module, incorporate the package with
 "use WordNet::QueryData;".  Then, establish an instance of the package
-with "my $wn = new WordNet::QueryData ("/usr/local/dict");".  If the
-WordNet dict is not located in /usr/local/dict on your system, pass
-the correct directory as the first argument of the function call.  You
-may pass a second argument of 1 if you wish the module to print out
-progress and verbose error messages.
+with "my $wn = new WordNet::QueryData->new;".  Make sure that the
+environment variable WNHOME defines the location of your WordNet
+directory.  You can also specify the WordNet directory directly: "my
+$wn = new WordNet::QueryData->new("/usr/local/wn17/dict");" A second
+argument to new can be used to have QueryData print out progress and
+warning messages (e.g. "my $wn = new
+WordNet::QueryData->new("/usr/local/wn17/dict",1);").
 
-WordNet::QueryData is object-oriented.  You can establish multiple
-instances simply by using 'new' multiple times, however, the only
-practical use I can see for this is comparing data from different
-WordNet versions.  I did the module OO-style because I had never done
-an OO perl module, figured it was time to learn and thought it might
-make the code a bit cleaner.
-
-The WordNet::QueryData object has two object functions that you might
-want to use, 'valid_forms' and 'query'.  'query' gives you direct
-access to the large set of WordNet relations.  It accepts a query
-string and a relation.  The query string may be at one of three
-specification levels:
+The WordNet::QueryData object has two main uses, 'valid_forms' and
+'query'.  'query' gives you direct access to the large set of WordNet
+relations.  It accepts a query string and a relation.  The query
+string may be at one of three specification levels:
 
   1) WORD (e.g. dog)
-  2) WORD#POS (e.g. house#noun)
-  3) WORD#POS#SENSE (e.g. ghostly#adj#1)
+  2) WORD#POS (e.g. house#n)
+  3) WORD#POS#SENSE (e.g. ghostly#a#1)
 
 WORD is simply an english word.  Spaces should be used to separate
 tokens (not underscores as is used in the WordNet database).  Case
@@ -704,20 +710,16 @@ exactly match one of the words in the WordNet database files.  Use
 'valid_forms' to determine the form in which WordNet stores the word.
 
 POS is the part of speech.  Use 'n' for noun, 'v' for verb, 'a' for
-adjective and 'r' for adverb.  You may also use full names and some
-abbreviations (as above and in test.pl).  POS is optional for calls to
-'query', and required for calls to 'valid_forms'.  SENSE is a number
-that uniquely identifies the word sense.  You can 'query' using a
-WORD#POS form to get a list of the word's senses for that part of
-speech.
+adjective and 'r' for adverb.  POS is optional for calls to 'query',
+but required for calls to 'valid_forms'.  SENSE is a number that
+uniquely identifies the word sense.  Call 'query' with a WORD string
+to get the list of possible WORD#POS strings for that WORD.  Call
+'query' with a WORD#POS string to get the list of possible
+WORD#POS#SENSE strings.
 
-Executing 'query' with only a WORD will return a list of WORD#POS
-strings.  Passing 'query' a WORD#POS will return a list of
-WORD#POS#SENSE strings.  'query' calls of these forms do not return
-any information about WordNet relations pertaining to WORD.  The third
-format, WORD#POS#SENSE, requires a second argument, RELATION, which
-may be any of the strings used by WordNet to designate a relation.
-Here is a list of most (if not all) of them:
+When calling 'query' with a WORD#POS#SENSE string, a relation must
+also be supplied.  The relation is the second argument to 'query' and
+may be any of the following 3- or 4-letter strings:
 
   syns - synset words
   ants - antonyms
@@ -741,41 +743,37 @@ Here is a list of most (if not all) of them:
   pert - pertainym (pertains to noun) (adjectives only)
   glos - word definition
 
-Such queries return a list of corresponding strings in the
-WORD#POS#SENSE format.  In the case of 'syns', one string is returned
-for each word that is part of the synset.  For other relations, one
-WORD#POS#SENSE string is returned for each synset (you can map 'syns'
-on to the returned array to get a full list of the words for a
-relation).  In the case of relations like 'hype' and 'hypo', query
-returns only the immediate hypernyms or hyponyms.  You can use 'query'
-recursively to get a full hyper/hyponym tree.
+The returned value is usually a list of WORD#POS#SENSE strings, but
+can vary according to the relation (e.g. 'glos' always returns a
+free-form string).
 
-While 'query' requires that WORD exactly matches an entry in WordNet,
-QueryData has functionality for determining the WordNet baseforms to
-which a particular WORD may correpsond.  This functionality is
-encapsulated in 'valid_forms'.  After suppling 'valid_forms' with
-QUERY, a string in the form WORD#POS, 'valid_forms' will return a list
-of WORD#POS strings which are existing WordNet entries that are base
-forms of QUERY.  Normally, one string will be returned.  An empty list
-will be returned if QUERY is not a word that WordNet knows about.
+The 'valid_forms' function returns variants on a word---alternate
+spellings, conjugations, plural/singular forms, etc.  It accepts a
+WORD#POS string and returns a list of WORD#POS strings that qualify as
+alternate forms of the same word.  An empty list will be returned if
+the argument is a word that WordNet does not know about.
 
 QueryData also has functionality for retrieving WordNet datafile
 offsets (the unique number that identifies a word sense).  The
 function 'offset' accepts a fully-qualified word sense in the form
-WORD#POS#SENSE and returns the corresponding numerical offset.  See
-WordNet documentation for more information about this quantity.
+WORD#POS#SENSE and returns the corresponding numerical offset.  These
+numbers correspond to locations in the data files
+(e.g. data.noun/noun.dat).
 
-The function 'list_all_words' will return an array of all words of a
-particular part-of-speech given that part-of-speech as its only
-argument.
+The function 'list_all_words' returns a list of all words with that
+part of speech.
+
+See test.pl for additional example uses of these functions.
 
 =head1 NOTES
 
-Requires access to WordNet database files (data.noun, index.noun, etc.)
+Requires access to WordNet database files (data.noun/noun.dat,
+index.noun/noun.idx, etc.)
 
 =head1 COPYRIGHT
 
-Copyright 2000 Jason Rennie <jrennie@ai.mit.edu>  All rights reserved.
+Copyright 2000, 2001, 2002 Jason Rennie <jrennie@ai.mit.edu> All
+rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
