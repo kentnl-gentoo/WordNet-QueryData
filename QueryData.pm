@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.29 2003/09/08 22:01:48 jrennie Exp $
+# $Id: QueryData.pm,v 1.30 2003/09/17 15:17:48 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.29 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.30 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -503,7 +503,7 @@ sub getSensePointers#
 }
 
 # $line is line from data file; $ptr is a reference to a hash of
-# symbols; $word is query word/lemma; returns list of word#pos strings
+# symbols; $word is query word/lemma; returns list of word#pos#sense strings
 sub getWordPointers#
 {
     my ($self, $line, $ptr, $word) = @_;
@@ -874,29 +874,37 @@ sub queryWord#
     
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
-    # (mich0212) warn "(queryWord) Ignorning sense: $string" if (defined($sense));
     die "(queryWord) Bad query string: $string" if (!defined($word));
     my $lword = lower ($word);
     die "(queryWord) Bad part-of-speech: $string"
 	if (defined($pos) && !$pos_num{$pos});
     
-    if (defined($pos)) {
+    if (defined($sense)) {
 	my $rel = shift;
-	warn "(queryWord) WORD=$word POS=$pos RELATION=$rel\n" if ($self->{verbose});
+	warn "(queryWord) WORD=$word POS=$pos SENSE=$sense RELATION=$rel\n" 
+	    if ($self->{verbose});
 	die "(queryWord) Relation required: $string" if (!defined($rel));
-	die "(queryWord) Bad relation: $rel" 
+	die "(queryWord) Bad relation: $rel"
 	    if ((!defined($relNameSym{$rel}) and !defined($relSymName{$rel})));
 	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
 	
 	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	# (mich0212) my @offsets = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
-	my $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
-	# (mich0212) foreach my $offset (@offsets) {
+	my $offset = (unpack "i*", 
+		      $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
 	seek $fh, $offset, 0;
 	my $line = <$fh>;
 	push @rtn, $self->getWordPointers($line, $relNameSym{$rel}, $word);
-	# (mich0212) }
-    } elsif (defined($word)) {
+    } elsif (defined($pos)) {
+	warn "(queryWord) WORD=$word POS=$pos\n" if ($self->{verbose});
+	if (defined($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
+	    my @offset = unpack "i*", 
+	    $self->{"index"}->[$pos_num{$pos}]->{$lword};
+	    $word = underscore(delMarker($word));
+	    for (my $i=0; $i < @offset; $i++) {
+		push @rtn, "$word\#$pos\#".($i+1);
+	    }
+	}
+    } else {
 	print STDERR "(queryWord) WORD=$word\n" if ($self->{verbose});
 	
 	$word = underscore(delMarker($word));
@@ -1006,7 +1014,7 @@ WordNet::QueryData - direct perl interface to WordNet database
   print "Senses: ", join(", ", $wn->querySense("run#v")), "\n";
   print "Forms: ", join(", ", $wn->validForms("lay down#v")), "\n";
   print "Noun count: ", scalar($wn->listAllWords("noun")), "\n";
-  print "Antonyms: ", join(", ", $wn->queryWord("affirm#v", "ants")), "\n";
+  print "Antonyms: ", join(", ", $wn->queryWord("dark#n#1", "ants")), "\n";
 
 =head1 DESCRIPTION
 

@@ -1,12 +1,19 @@
+2003-09-17  Jason R Michelizzi <mich0212@d.umn.edu>
+
+	* release 1.30
+	* QueryData.pm (queryWord): updates to fix handling of type (2) strings
+	* test.pl: updated queryWord tests
+
 2003-09-08  Jason R Michelizzi <mich0212@d.umn.edu>
 
 	* release 1.29
 	* QueryData.pm (getWord): debug
 	* QueryData.pm (queryWord): debug
+	* test.pl: updated queryWord tests
 	
 2003-05-02  Siddharth A Patwardhan <patw0006@d.umn.edu>
 
-        * QueryData.pm (loadIndex): remember WordNet path
+	* QueryData.pm (loadIndex): remember WordNet path
 
 2003-04-03  Jason Rennie <jrennie@ai.mit.edu>
 

@@ -2,7 +2,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.26 2003/09/08 22:01:48 jrennie Exp $
+# $Id: test.pl,v 1.27 2003/09/17 15:17:48 jrennie Exp $
 
 my $i = 1;
 BEGIN { $| = 1; print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\n"; }
@@ -89,15 +89,15 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->validForms("women#n"))[0] eq "woman#n"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-($wn->queryWord("dark#n#1", "ants"))[0] eq "light#n#10"
+($wn->queryWord("dog"))[0] eq "dog#n"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("darkness#n#1", "ants")) == 0
+($wn->queryWord("dog#v"))[0] eq "dog#v#1"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("blue#a#3", "pert"))[0] eq "blue#n#2"
+($wn->queryWord("dog#n"))[0] eq "dog#n#1"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("chattering#a#1", "part"))[0] eq "chatter#v#5"
+($wn->queryWord("tall#a#1", "ants"))[0] eq "short#a#3"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->queryWord("act#v#2", "also"))[0] eq "act_up#v#2"
+($wn->queryWord("congruity#n#1", "ants"))[0] eq "incongruity#n#1"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 if ($ver eq "1.6") {
