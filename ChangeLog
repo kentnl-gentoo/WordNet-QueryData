@@ -1,3 +1,7 @@
+2000-09-12  John Asmuth <jasmuth@clarity.princeton.edu>
+
+	* QueryData.pm ($wordnet_dir): use WNHOME environment variable
+
 2001-02-26  Luigi Bianchi <lbianchi@yorku.ca>
 
 	* README: added an installation procedure for Windows

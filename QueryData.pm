@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.10 2000/09/12 12:29:47 jrennie Exp $
+# $Id: QueryData.pm,v 1.11 2001/09/12 21:43:33 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.10 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.11 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -94,7 +94,7 @@ my %relation_sym = ('!'  => 'ants',
 		    '\\' => 'pert');
 
 # Default location of WordNet dictionary files
-my $wordnet_dir = "/usr/local/dict";
+my $wordnet_dir = $ENV{"WNHOME"}."/dict";
 
 # WordNet data file names
 my @exc_file = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
