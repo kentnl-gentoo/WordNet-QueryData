@@ -1,3 +1,12 @@
+2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.27
+	
+	* test.pl: add detachment tests; postpone queryWord tests
+
+	* QueryData.pm: add new detachment rules; warn that 1.6 and 1.7
+	are no longer officially supported
+	
 2002-08-06  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.26

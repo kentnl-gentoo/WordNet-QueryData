@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.26 2002/08/06 18:51:26 jrennie Exp $
+# $Id: QueryData.pm,v 1.27 2002/12/04 05:57:15 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.26 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.27 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -292,6 +292,8 @@ sub loadIndex#
 	    last if (!$line);
 	}
     }
+    warn "*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($version eq "1.6");
+    warn "*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($version eq "1.7");
 }
 
 # Open data files and return file handles
@@ -339,7 +341,7 @@ sub removeDuplicates
 }
 
 # - transforms ending according to rules of detachment
-#   (http://www.cogsci.princeton.edu/~wn/doc/man1.7/morphy.htm).
+#   (http://www.cogsci.princeton.edu/~wn/doc/man1.7.1/morphy.htm).
 # - assumes a single token (no collocations).
 # - "#pos#sense" qualification NOT appended to returned words
 # - always returns original word
@@ -359,6 +361,8 @@ sub tokenDetach#
 	push @detach, $1 if ($word =~ m/^(\w+z)es$/);
 	push @detach, $1 if ($word =~ m/^(\w+ch)es$/);
 	push @detach, $1 if ($word =~ m/^(\w+sh)es$/);
+	push @detach, $1."man" if ($word =~ m/^(\w+)men$/);
+	push @detach, $1."y" if ($word =~ m/^(\w+)ies$/);
     }
     elsif ($pos_num{$pos} == 2)
     {

@@ -15,7 +15,7 @@ PREREQUISITES
 -------------
 
 - Perl5 (e.g 5.005_03 or 5.6.1)
-- WordNet Database Package version 1.6, 1.7 or 1.7.1
+- WordNet Database Package version 1.7.1
 
 DOCUMENTATION
 -------------

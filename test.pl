@@ -2,10 +2,10 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.22 2002/07/30 20:08:04 jrennie Exp $
+# $Id: test.pl,v 1.25 2002/12/04 06:08:11 jrennie Exp $
 
 my $i = 1;
-BEGIN { $| = 1; print "v1.6: 1..34\nv1.7: 1..36\nv1.7.1: 1..35\n"; }
+BEGIN { $| = 1; print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\n"; }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
 $loaded = 1;
@@ -92,6 +92,23 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->tagSenseCnt("academy#n") == 2)
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
+# test "ies" -> "y" rule of detachment
+($wn->validForms("activities#n"))[0] eq "activity#n"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+# test "men" -> "man" rule of detachment
+($wn->validForms("women#n"))[0] eq "woman#n"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
+# Antonym relation is between synset elements
+#($wn->queryWord("dark#n#1", "ants"))[0] eq "light#n#10"
+#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+#($wn->queryWord("darkness#n#1", "ants")) == 0
+#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+# queryWord returns more specific sets (like querySense)
+#($wn->queryWord("sunset#n")) == 3
+#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+#($wn->queryWord("sunset")) == 2
+#    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 if ($ver eq "1.6") {
     scalar $wn->querySense ("cat#noun#7", "syns") == 5
