@@ -10,7 +10,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.8 2000/03/28 14:51:54 jrennie Exp $
+# $Id: QueryData.pm,v 1.9 2000/03/31 13:06:53 jrennie Exp $
 
 package WordNet::QueryData;
 
@@ -31,7 +31,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.8 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.9 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -78,12 +78,12 @@ my %pos_num = ('noun'      => '1',
 my %relation_sym = ('!'  => 'ants',
 		    '@'  => 'hype',
 		    '~'  => 'hypo',
-		    '#m' => 'mmem',
-		    '#s' => 'msub',
-		    '#p' => 'mprt',
-		    '%m' => 'hmem',
-		    '%s' => 'hsub',
-		    '%p' => 'hprt',
+		    '%m' => 'mmem',
+		    '%s' => 'msub',
+		    '%p' => 'mprt',
+		    '#m' => 'hmem',
+		    '#s' => 'hsub',
+		    '#p' => 'hprt',
 		    '='  => 'attr',
 		    '*'  => 'enta',
 		    '>'  => 'caus',
