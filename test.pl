@@ -2,10 +2,10 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.21 2002/06/27 11:38:39 jrennie Exp $
+# $Id: test.pl,v 1.22 2002/07/30 20:08:04 jrennie Exp $
 
 my $i = 1;
-BEGIN { $| = 1; print "v1.6: 1..27\nv1.7: 1..29\n"; }
+BEGIN { $| = 1; print "v1.6: 1..34\nv1.7: 1..36\nv1.7.1: 1..35\n"; }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
 $loaded = 1;
@@ -18,6 +18,7 @@ print "ok ", $i++, "\n";
 print "Loading index files.  This may take a while...\n";
 # Uses $WNHOME environment variable
 my $wn = WordNet::QueryData->new;
+#my $wn = WordNet::QueryData->new("/home/ai2/jrennie/usr/share/wordnet-1.7/dict");
 #my $wn = WordNet::QueryData->new("/home/ai2/jrennie/usr/share/wordnet-1.6/dict");
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
@@ -27,8 +28,6 @@ print "Found WordNet database version $ver\n";
 ($wn->querySense("sunset#n#1", "hype"))[0] eq "hour#n#2"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->forms ("other sexes#1") == 3
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->forms ("fussing#2") == 3
@@ -47,12 +46,16 @@ scalar $wn->querySense ("cat#n#1", "hypo") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->queryWord("sure#a", "ants"))[0] eq "unsure#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-scalar $wn->querySense ("cat#noun#7", "syns") == 5
+# check that underscore is added, syntactic marker is removed
+($wn->querySense("infra dig"))[0] eq "infra_dig#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-
-($wn->querySense ("play down"))[0] eq "play_down#v"
+($wn->querySense("infra dig#a"))[0] eq "infra_dig#a#1"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-($wn->querySense ("play down#v"))[0] eq "play_down#v#1"
+($wn->querySense("infra dig#a#1", "syns"))[0] eq "infra_dig#a#1"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("descending"))[0] eq "descending#a"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord("descending#a", "ants"))[0] eq "ascending#a"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 ($wn->queryWord ("play down#v", "ants"))[0] eq "play_up#v"
@@ -78,7 +81,23 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->querySense("authority#n#4", "attr"))[0] eq "certain#a#2"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
+($wn->validForms("running"))[1] eq "run#v"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+# test capitalization
+($wn->querySense("armageddon#n#1", "syns"))[0] eq "Armageddon#n#1"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense("World_War_II#n#1", "mero"))[1] eq "Battle_of_Britain#n#1"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+# test tagSenseCnt function
+($wn->tagSenseCnt("academy#n") == 2)
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
+
 if ($ver eq "1.6") {
+    scalar $wn->querySense ("cat#noun#7", "syns") == 5
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     $wn->offset ("child#n#1") == 7153837
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->querySense ("car#n#1", "mero") == 29
@@ -88,6 +107,10 @@ if ($ver eq "1.6") {
     scalar $wn->querySense ("run#verb") == 42
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 } elsif ($ver eq "1.7") {
+    scalar $wn->querySense ("cat#noun#7", "syns") == 5
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->listAllWords("noun") == 107930
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     $wn->offset("child#n#1") == 7964378
@@ -97,6 +120,21 @@ if ($ver eq "1.6") {
     scalar $wn->querySense("run#verb") == 41
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->offset("0#n#1") == 11356314
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->forms("axes#1") == 3
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+} elsif ($ver eq "1.7.1") {
+    scalar $wn->querySense ("cat#noun#7", "syns") == 6
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->listAllWords("noun") == 109195
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    $wn->offset("child#n#1") == 8144030
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->querySense("car#n#1", "mero") == 29
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->querySense("run#verb") == 41
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    scalar $wn->offset("0#n#1") == 11596022
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->forms("axes#1") == 3
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";

@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.24 2002/06/27 11:38:39 jrennie Exp $
+# $Id: QueryData.pm,v 1.25 2002/07/30 20:08:03 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.24 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.25 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -149,8 +149,8 @@ my @dataFileUnix = ("", "data.noun", "data.verb", "data.adj", "data.adv");
 my @indexFilePC = ("", "noun.idx", "verb.idx", "adj.idx", "adv.idx");
 my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
 
-my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/wordnet1.7";
-my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\wn16";
+my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-1.7.1";
+my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\1.7.1";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $wnHomeUnix."/".$ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $wnHomePC."\\".$ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
@@ -174,6 +174,20 @@ sub lower#
     $word =~ tr/A-Z /a-z_/;
     $word =~ s/\(.*\)$//;
     return $word;
+}
+
+# translate ' ' to '_'
+sub underscore#
+{ 
+    $_[0] =~ tr/ /_/;
+    return $_[0];
+}
+
+# Eliminate any syntactic marker
+sub delMarker#
+{ 
+    $_[0] =~ s/\(.*\)$//;
+    return $_[0];
 }
 
 # Perform all initialization for new WordNet class instance
@@ -241,10 +255,6 @@ sub loadExclusions#
 	{
 	    my ($exc, @word) = split(/\s+/, $line);
 	    next if (!@word);
-	    $exc = lower ($exc);
-	    for (my $i=0; $i < @word; ++$i) {
-		$word[$i] = lower($word[$i]);
-	    }
 	    @{$self->{morph_exc}->[$i]->{$exc}} = @word;
 	}
     }
@@ -266,18 +276,18 @@ sub loadIndex#
 	
 	my $line;
 	while ($line = <$fh>) {
-	    $version = $1 if (!defined($version) and $line =~ m/WordNet (\d+\.\d+)/);
+	    $version = $1 if (!defined($version) and $line =~ m/WordNet (\S+)/);
 	    last if ($line =~ m/^\S/);
 	}
 	while (1) {
 	    my ($lemma, $pos, $sense_cnt, $p_cnt);
 	    ($lemma, $pos, $sense_cnt, $p_cnt, $line) = split(/\s+/, $line, 5);
-	    $lemma = lower($lemma);
 	    for (my $i=0; $i < $p_cnt; ++$i) {
 		(undef, $line) = split(/\s+/, $line, 2);
 	    }
-	    my (undef, undef, @offset) = split(/\s+/, $line);
+	    my (undef, $tagsense_cnt, @offset) = split(/\s+/, $line);
 	    $self->{"index"}->[$pos_num{$pos}]->{$lemma} = pack "i*", @offset;
+	    $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lemma} = $tagsense_cnt;
 	    $line = <$fh>;
 	    last if (!$line);
 	}
@@ -340,7 +350,7 @@ sub tokenDetach#
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(forms) Sense number ignored\n" if (defined($sense));
     die "(tokenDetach) bad part-of-speech: pos=$pos word=$word sense=$sense" if (!defined($pos) or !defined($pos_num{$pos}));
-    my @detach = ($word); # list of modified words
+    my @detach = ($word); # list of possible forms
     if ($pos_num{$pos} == 1)
     {
 	push @detach, $1 if ($word =~ m/^(\w+)s$/);
@@ -368,7 +378,7 @@ sub tokenDetach#
 	push @detach, $1 if ($word =~ m/^(\w+e)r$/);
 	push @detach, $1 if ($word =~ m/^(\w+e)st$/);
     }
-    $self->remove_duplicates(\@detach);
+    $self->removeDuplicates(\@detach);
     return @detach;
 }
 
@@ -378,11 +388,12 @@ sub _forms#
     # Assume that word is canonicalized, pos is number
     my ($self, $word, $pos) = @_;
 
+    my $lword = lower($word);
     warn "(_forms) WORD=$word POS=$pos\n" if ($self->{verbose});
     # if word is in morph exclusion table, return that entry
-    return ($word, @{$self->{morph_exc}->[$pos]->{$word}}) if (defined ($self->{morph_exc}->[$pos]->{$word}));	
+    return ($word, @{$self->{morph_exc}->[$pos]->{$lword}}) if (defined ($self->{morph_exc}->[$pos]->{$lword}));	
 
-    my @token = split (/\_/, $word);
+    my @token = split (/[ _]/, $word);
     # If there is only one token, process via rules of detachment
     return tokenDetach ($self, $token[0]."#".$pos) if (@token == 1);
     # Otherwise, process each token individually, then string together colloc's
@@ -422,10 +433,9 @@ sub forms#
     warn "(forms) Sense number ignored\n" if (defined($sense));
     warn "(forms) WORD=$word POS=$pos\n" if ($self->{verbose});
     die "(forms) Bad part-of-speech: pos=$pos" if (!defined($pos) or !defined($pos_num{$pos}));
-    my @rtn = _forms ($self, lower($word), $pos_num{$pos});
+    my @rtn = _forms ($self, $word, $pos_num{$pos});
     for (my $i=0; $i < @rtn; ++$i) {
 	$rtn[$i] .= "\#$pos";
-	$rtn[$i] = lower ($rtn[$i]);
     }
     return @rtn;
 }
@@ -491,6 +501,7 @@ sub getWordPointers#
     warn "(getWordPointers) ptr=", keys(%{$ptr}), " word=$word line=\"$line\"\n"
 	if ($self->{verbose});
     
+    my $lword = lower($word);
     my (@rtn, $w_cnt);
     (undef, undef, undef, $w_cnt, $line) = split (/\s+/, $line, 5);
     $w_cnt = hex ($w_cnt);
@@ -507,7 +518,7 @@ sub getWordPointers#
 	next if (!$st);
 	my ($src, $tgt) = ($st =~ m/([0-9a-f]{2})([0-9a-f]{2})/);
 	push @rtn, $self->getWord($offset, $pos, hex($tgt))
-	    if (defined($ptr->{$sym}) and ($word eq $word[$src-1]));
+	    if (defined($ptr->{$sym}) and ($word[$src-1] =~ m/$lword/i));
     }
     return @rtn;
 }
@@ -585,8 +596,9 @@ sub getAllSenses#
 	($words[$i], undef, $line) = split(/\s+/, $line, 3);
     }
     foreach my $word (@words) {
-	$word = lower ($word);
-	my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});
+	$word = delMarker($word);
+	my $lword = lower ($word);
+	my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
 	for (my $i=0; $i < @offArr; $i++) {
 	    if ($offArr[$i] == $offset) {
 		push @rtn, "$word\#$pos\#".($i+1);
@@ -608,8 +620,9 @@ sub getSense#
     my $line = <$fh>;
     my ($word);
     (undef, undef, undef, undef, $word, $line) = split (/\s+/, $line, 6);
-    $word = lower($word);
-    my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});
+    $word = delMarker($word);
+    my $lword = lower($word);
+    my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
     for (my $i=0; $i < @offArr; $i++) {
 	return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
     }
@@ -631,6 +644,7 @@ sub getWord#
     for (my $i=0; $i < $w_cnt; ++$i) {
 	my $word;
 	($word, undef, $line) = split(/\s+/, $line, 3);
+	$word = delMarker($word);
 	return "$word\#$pos" if ($i+1 == $num);
     }
     die "(getWord) Bad number: offset=$offset pos=$pos num=$num";
@@ -647,8 +661,8 @@ sub offset#
     die "(offset) Bad query string: $string"
 	if (!defined($sense) or !defined($pos)
 	    or !defined($word) or !defined($pos_num{$pos}));
-    $word = lower ($word);
-    return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word})[$sense-1];
+    my $lword = lower ($word);
+    return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
 }
 
 # DEPRECATED!  DO NOT USE!  Use "querySense" instead.
@@ -783,7 +797,7 @@ sub querySense#
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     die "(querySense) Bad query string: $string" if (!defined($word));
-    $word = lower ($word);
+    my $lword = lower ($word);
     die "(querySense) Bad part-of-speech: $string"
 	if (defined($pos) && !$pos_num{$pos});
     
@@ -797,7 +811,7 @@ sub querySense#
 	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
 	
 	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	my $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word})[$sense-1];
+	my $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
 	seek $fh, $offset, 0;
 	my $line = <$fh>;
 	
@@ -811,17 +825,19 @@ sub querySense#
 	}
     } elsif (defined($pos)) {
 	warn "(querySense) WORD=$word POS=$pos\n" if ($self->{verbose});
-	if (defined($self->{"index"}->[$pos_num{$pos}]->{$word})) {
-	    my @offset = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word};
+	if (defined($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
+	    my @offset = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
+	    $word = underscore(delMarker($word));
 	    for (my $i=0; $i < @offset; $i++) {
 		push @rtn, "$word\#$pos\#".($i+1);
 	    }
 	}
     } elsif (defined($word)) {
 	print STDERR "(querySense) WORD=$word\n" if ($self->{verbose});
+	$word = underscore(delMarker($word));
 	for (my $i=1; $i <= 4; $i++) {
 	    push @rtn, "$word\#".$pos_map{$i}
-	    if ($self->{"index"}->[$i]->{$word});
+	    if ($self->{"index"}->[$i]->{$lword});
 	}
     }
     # Return setting of input record separator
@@ -843,7 +859,7 @@ sub queryWord#
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(queryWord) Ignorning sense: $string" if (defined($sense));
     die "(queryWord) Bad query string: $string" if (!defined($word));
-    $word = lower ($word);
+    my $lword = lower ($word);
     die "(queryWord) Bad part-of-speech: $string"
 	if (defined($pos) && !$pos_num{$pos});
     
@@ -856,7 +872,7 @@ sub queryWord#
 	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
 	
 	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	my @offsets = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word};
+	my @offsets = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
 	foreach my $offset (@offsets) {
 	    seek $fh, $offset, 0;
 	    my $line = <$fh>;
@@ -864,9 +880,11 @@ sub queryWord#
 	}
     } elsif (defined($word)) {
 	print STDERR "(queryWord) WORD=$word\n" if ($self->{verbose});
+	
+	$word = underscore(delMarker($word));
 	for (my $i=1; $i <= 4; $i++) {
 	    push @rtn, "$word\#".$pos_map{$i}
-	    if ($self->{"index"}->[$i]->{$word});
+	    if ($self->{"index"}->[$i]->{$lword});
 	}
     }
     # Return setting of input record separator
@@ -890,9 +908,16 @@ sub validForms#
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(valid_forms) Sense number ignored: $string\n" if (defined $sense);
-    die "(valid_forms) Bad part of speech: $string"
-	if (!defined($pos_map{$pos}));
+    if (!defined($pos)) {
+	my @rtn;
+	push @rtn, $self->validForms($string."#n");
+	push @rtn, $self->validForms($string."#v");
+	push @rtn, $self->validForms($string."#a");
+	push @rtn, $self->validForms($string."#r");
+	return @rtn;
+    }
     
+    die "(valid_forms) Invalid part-of-speech: $pos" if (!defined($pos_map{$pos}));
     @possible_forms = $self->forms ("$word#$pos");
     @valid_forms = grep $self->querySense ($_), @possible_forms;
     
@@ -925,6 +950,18 @@ sub level#
 	($word) = $self->querySense ($word, "hype");
     }
     return $level;
+}
+
+sub tagSenseCnt
+{
+    my ($self, $string) = @_;
+    # get word, pos, and sense from second argument:
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+    warn "(tagSenseCnt) Ignorning sense: $string" if (defined($sense));
+    die "Word and part-of-speech required word=$word pos=$pos"
+	if (!defined($word) or !defined($pos) or !defined($pos_num{$pos}));
+    my $lword = lower($word);
+    return $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lword};
 }
 
 # module must return true
@@ -977,16 +1014,16 @@ you invoke the "new" function.
 QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  By default, QueryData assumes that WordNet data files
 are located in WNHOME/WNSEARCHDIR (WNHOME\WNSEARCHDIR on a PC), where
-WNHOME defaults to "/usr/local/wordnet1.7" on Unix and "C:\wn17" on a
-PC.  WNSEARCHDIR defaults to "dict".  Normally, all you have to do is
-to set the WNHOME variable to the location where you unpacked your
-WordNet distribution.  The database files are always unpacked to the
-"dict" subdirectory.
+WNHOME defaults to "/usr/local/WordNet-1.7.1" on Unix and "C:\Program
+Files\WordNet\1.7.1" on a PC.  WNSEARCHDIR defaults to "dict".
+Normally, all you have to do is to set the WNHOME variable to the
+location where you unpacked your WordNet distribution.  The database
+files are always unpacked to the "dict" subdirectory.
 
 You can also pass the location of the database files directly to
 QueryData.  To do this, pass the location to "new":
 
-  my $wn = new WordNet::QueryData->new("/usr/local/wn17/dict")
+  my $wn = new WordNet::QueryData->new("/usr/local/wordnet/dict")
 
 When calling "new" in this fashion, you can give it a second argument
 to have QueryData print out progress and warning messages.
@@ -1002,16 +1039,16 @@ definition of a sense and the words in a synset are obtained via
 querySense.
 
 Both functions take as their first argument a query string that takes
-one of three forms:
+one of three types:
 
   (1) word (e.g. "dog")
   (2) word#pos (e.g. "house#n")
   (3) word#pos#sense (e.g. "ghostly#a#1")
 
-(1) or (2) passed to querySense will return a list of possible query
-strings at the next level of specificity.  (1) passed to queryWord
-will do the same.  When (3) is passed to querySense, it requires a
-second argument, a relation.  Possible relations are:
+Types (1) or (2) passed to querySense will return a list of possible
+query strings at the next level of specificity.  Type (1) passed to
+queryWord will do the same.  When type (3) is passed to querySense, it
+requires a second argument, a relation.  Possible relations are:
 
   syns - synset words
   ants - antonyms
@@ -1036,24 +1073,31 @@ second argument, a relation.  Possible relations are:
   glos - word definition
 
 When called in this manner, querySense will return a list of related
-senses.  When queryWord is called with (2), it requires a relation and
-will return a list of related words (in the form of (2)).
+senses.  When queryWord is called with a type (2), it requires a
+relation and will return a list of related words (of type (2)).
 
 =head2 OTHER FUNCTIONS
 
-"validForms" accepts a (2) query string and returns a list of all
-alternate forms (alternate spellings, conjugations, plural/singular
-forms, etc.) that WordNet recognizes.
+"validForms" accepts a type (1) or (2) query string.  It returns a list of
+all alternate forms (alternate spellings, conjugations,
+plural/singular forms, etc.) that WordNet recognizes.  The type (1) query
+returns alternates for all parts of speech (noun, verb, adjective,
+adverb).
 
 "listAllWords" accepts a part of speech and returns the full list of
 words in the WordNet database for that part of speech.
 
-"level" accepts a (3) query string and returns a distance (not
+"level" accepts a type (3) query string and returns a distance (not
 necessarily the shortest or longest) to the root in the hypernym
 directed acyclic graph.
 
-"offset" accepts a (3) query string and returns the binary offset of
+"offset" accepts a type (3) query string and returns the binary offset of
 that sense''s location in the corresponding data file.
+
+"tagSenseCnt" accepts a type (2) query string and returns the tagsense_cnt
+value for that lemma: "number of senses of lemma that are ranked
+according to their frequency of occurrence in semantic concordance
+texts."
 
 See test.pl for additional example usage.
 

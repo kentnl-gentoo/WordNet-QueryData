@@ -1,8 +1,36 @@
+2002-07-30  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.25
+	* QueryData.pm (validForms): return forms for all POS's if no POS
+	passed
+	* QueryData.pm: only lowercase when necessary (index.* lookups)
+	* QueryData.pm (getAllSenses): return word straight from data.*
+	* QueryData.pm (getSense): return word straight from data.*
+	* QueryData.pm (querySense): form (1) & (2): use same capitalization
+	as query
+	* QueryData.pm (queryWord): form (1): use same capitalization as
+	query
+	* QueryData.pm (getWordPointers): lower($word), ignore case in
+	comparison
+	* QueryData.pm (loadExclusions): don't lowercase words
+	* QueryData.pm (loadIndex): don't lowercase words
+	* QueryData.pm (forms): don't lowercase words
+	* QueryData.pm (delMarker): new function
+	* QueryData.pm (underscore): new function
+	* QueryData.pm (tagSenseCnt): new function
+	* QueryData.pm (loadIndex): store tagsense_cnt information
+	* Makefile.PL: update default directories to v1.7.1
+	* QueryData.pm (wnHomeUnix, wnHomePC): update to v1.7.1
+	* test.pl: update for v1.7.1
+	* test.pl: add tests for syntactic marker, capitalization, tagSenseCnt
+	* QueryData.pm (documentation): Use "type" to describe different
+	levels of query specificity
+	
 2002-06-27  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.24
 	* test.pl: add test to check for hex parsing
-	* QueryData (getWordPointers): bugfix: parse source/target as
+	* QueryData.pm (getWordPointers): bugfix: parse source/target as
 	hexidecimal (thanks to "Peter Turney" <peter.turney@nrc.ca> for
 	spotting the bug)
 	
