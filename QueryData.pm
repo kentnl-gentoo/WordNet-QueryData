@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.33 2004/07/14 14:43:42 jrennie Exp $
+# $Id: QueryData.pm,v 1.34 2004/08/24 15:13:32 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.33 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.34 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -158,6 +158,7 @@ my %relation_sym = ('!'  => 'ants',
 		    '\\' => 'pert');
 
 # WordNet data file names
+my $lexnamesFile = "lexnames";
 my @excFile = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
 my @indexFileUnix = ("", "index.noun", "index.verb", "index.adj", "index.adv");
 my @dataFileUnix = ("", "data.noun", "data.verb", "data.adj", "data.adv");
@@ -216,6 +217,7 @@ sub _initialize#
     
     # Load morphology exclusion mapping
     $self->loadExclusions ();
+    $self->loadLexnames();
     $self->loadIndex ();
     $self->openData ();
     warn "Done.\n" if ($self->{verbose});
@@ -273,6 +275,29 @@ sub loadExclusions#
 	    @{$self->{morph_exc}->[$i]->{$exc}} = @word;
 	}
     }
+}
+
+# Load mapping to non-standard canonical form of words (morphological
+# exceptions)
+sub loadLexnames#
+{
+    my $self = shift;
+    warn "(loadLexnames)" if ($self->{verbose});
+
+    my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$lexnamesFile : "$wnPrefixUnix/$lexnamesFile";
+    my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$lexnamesFile : "$wnPrefixPC\\$lexnamesFile";
+	
+    my $fh = new FileHandle($fileUnix);
+    $fh = new FileHandle($filePC) if (!defined($fh));
+    die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
+    
+    while (my $line = <$fh>)
+    {
+	my ($num, $name, $pos) = split(/\s+/, $line);
+	next if (!$num);
+	$self->{lexMap}->{$num} = $name;
+    }
+    undef $fh
 }
 
 sub loadIndex#
@@ -642,8 +667,8 @@ sub getSense#
     my $fh = $self->{data_fh}->[$pos_num{$pos}];
     seek $fh, $offset, 0;
     my $line = <$fh>;
-    my ($word);
-    (undef, undef, undef, undef, $word, $line) = split (/\s+/, $line, 6);
+    my ($lexfn,$word);
+    (undef, $lexfn, undef, undef, $word, $line) = split (/\s+/, $line, 6);
     $word = delMarker($word);
     my $lword = lower($word);
     my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
@@ -693,6 +718,21 @@ sub offset#
 	    or !defined($word) or !defined($pos_num{$pos}));
     my $lword = lower ($word);
     return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
+}
+
+# Return the lexname for the type (3) query string
+sub lexname#
+{
+    my ($self, $string) = @_;
+
+    my $offset = $self->offset($string);
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+    warn "(lexname) word=$word pos=$pos sense=$sense offset=$offset\n" if ($self->{verbose});
+    my $fh = $self->{data_fh}->[$pos_num{$pos}];
+    seek $fh, $offset, 0;
+    my $line = <$fh>;
+    my (undef, $lexfn, undef) = split (/\s+/, $line, 3);
+    return $self->{lexMap}->{$lexfn};
 }
 
 # DEPRECATED!  DO NOT USE!  Use "querySense" instead.
@@ -1148,6 +1188,9 @@ that sense's location in the corresponding data file.
 value for that lemma: "number of senses of lemma that are ranked
 according to their frequency of occurrence in semantic concordance
 texts."
+
+"lexname" accepts a type (3) query string and returns the lexname of
+the sense; see WordNet lexnames man page for more information.
 
 See test.pl for additional example usage.
 

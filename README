@@ -66,16 +66,10 @@ Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
 WINDOWS
 -------
 
-Here's the install proceedure suggested by Luigi Bianchi, lbianchi AT
-yorku.ca, for Win95.  Let me, jrennie@csail.mit.edu, know if this
-doesn't work for other Windows variants.
-
-  1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.
-  2) Create the dir WordNet off the distribution, i.e. 
-     /djgpp/lib/perl5/site/WordNet-QueryData-1.27/WordNet  and copy
-     QueryData.pm in it.
-  3) Follow your instructions as per your README, i.e. replace 
-     "/usr/local/dict" with "/wn16/dict" in test.pl
+  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.0
+  1) Unpack the WordNet QueryData distribution
+  2) Copy QueryData.pm to C:\Program Files\WordNet
+  3) Run perl -I"C:\Program Files" test.pl to test the installation
 
 COPYRIGHT
 ---------

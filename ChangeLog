@@ -1,11 +1,22 @@
-2004-07-14  Jason Rennie <jrennie@csail.mit.edu>
+2004-08-24  Jason Rennie
+
+	* release 1.34
+	* QueryData.pm (lexnamesFile): new top-level variable
+	* QueryData.pm (loadLexnames): new function
+	* QueryData.pm (lexname): new function
+	* QueryData.pm: add lexname documentation
+	* test.pl: add lexname tests
+	* README: remove e-mail addresses (to reduce spam)
+	* ChangeLog: remove e-mail addresses (to reduce spam)
+
+2004-07-14  Jason Rennie
 
 	* release 1.33
 	* QueryData.pm: Update "LOCATING THE WORDNET DATABASE"
 	documentation (kudos to Jason R Michelizzi for pointing out that
 	this needed updating)
 
-2003-10-08  Jason R Michelizzi <mich0212@d.umn.edu>
+2003-10-08  Jason R Michelizzi
 
 	* release 1.31
 	* QueryData.pm: add new symbols to %relNameSym and %relSymName;
@@ -13,28 +24,28 @@
 	Changed documentation to reflect this.
 	* test.pl: updated tests for 2.0
 
-2003-09-25  Jason Rennie <jrennie@ai.mit.edu>
+2003-09-25  Jason Rennie
 
 	* test.pl: move "cat#n" test to version-specific area (8 senses in 2.0)
 	
-2003-09-17  Jason R Michelizzi <mich0212@d.umn.edu>
+2003-09-17  Jason R Michelizzi
 
 	* release 1.30
 	* QueryData.pm (queryWord): updates to fix handling of type (2) strings
 	* test.pl: updated queryWord tests
 
-2003-09-08  Jason R Michelizzi <mich0212@d.umn.edu>
+2003-09-08  Jason R Michelizzi
 
 	* release 1.29
 	* QueryData.pm (getWord): debug
 	* QueryData.pm (queryWord): debug
 	* test.pl: updated queryWord tests
 	
-2003-05-02  Siddharth A Patwardhan <patw0006@d.umn.edu>
+2003-05-02  Siddharth A Patwardhan
 
 	* QueryData.pm (loadIndex): remember WordNet path
 
-2003-04-03  Jason Rennie <jrennie@ai.mit.edu>
+2003-04-03  Jason Rennie
 
 	* release 1.28
 
@@ -44,7 +55,7 @@
 	queryWord do not work as they should; see commented out tests in
 	test.pl for examples of what doesn't work
 
-2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
+2002-12-04  Jason Rennie
 
 	* release 1.27
 	
@@ -53,13 +64,13 @@
 	* QueryData.pm: add new detachment rules; warn that 1.6 and 1.7
 	are no longer officially supported
 	
-2002-08-06  Jason Rennie <jrennie@ai.mit.edu>
+2002-08-06  Jason Rennie
 
 	* release 1.26
 	* QueryData.pm (wnPrefixUnix, wnPrefixPC): don't prepend WNHOME to
 	WNSEARCHDIR
 	
-2002-07-30  Jason Rennie <jrennie@ai.mit.edu>
+2002-07-30  Jason Rennie
 
 	* release 1.25
 	* QueryData.pm (validForms): return forms for all POS's if no POS
@@ -86,22 +97,21 @@
 	* QueryData.pm (documentation): Use "type" to describe different
 	levels of query specificity
 	
-2002-06-27  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-27  Jason Rennie
 
 	* release 1.24
 	* test.pl: add test to check for hex parsing
 	* QueryData.pm (getWordPointers): bugfix: parse source/target as
-	hexidecimal (thanks to "Peter Turney" <peter.turney@nrc.ca> for
-	spotting the bug)
+	hexidecimal (thanks to Peter Turney for spotting the bug)
 	
-2002-06-20  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-20  Jason Rennie
 
 	* release 1.23
 	* test.pl: add test to check for hex conversion
 	* QueryData.pm (getSensePointers): convert $st from hexidecimal
 	* QueryData.pm (getWordPointers): convert $tgt from hexidecimal
 
-2002-06-12  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-12  Jason Rennie
 
 	* release 1.22
 	* Makefile.PL: die if WNHOME isn't set and the neither the windows
@@ -109,23 +119,23 @@
 	die prematurely if WordNet is not installed---will prevent false
 	FAIL's)
 	* QueryData.pm (getWord): bugfix: convert $w_cnt from hexadecimal
-	(thanks to "Peter Turney" <peter.turney@nrc.ca> for spotting the bug)
+	(thanks to Peter Turney for spotting the bug)
 	
-2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-11  Jason Rennie
 
 	* release 1.21
 	* test.pl: make tests reflect changes
 	* QueryData.pm (_forms): return original word (in addition to morph
 	exclusion or rules of detachment forms)
 
-2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-11  Jason Rennie
 
 	* release 1.20
 	* QueryData.pm (_forms): new function
 	* QueryData.pm (forms): check morph exclusions for tokens of
 	collocations; use a recursive organization.
 
-2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+2002-06-11  Jason Rennie
 
 	* release 1.19
 	* test.pl: add tests to cover changes
@@ -137,14 +147,14 @@
 	spaces in any retured words
 	* QueryData.pm (lower): translate ' ' to '_'
 
-2002-04-12  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-12  Jason Rennie
 
 	* release 1.18
 	* QueryData.pm (querySense): fix bug in "glos" lookup (no varaible
 	for pattern match, m//)
 	* test.pl: some tests still used old functions; use new ones
 	
-2002-04-07  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-07  Jason Rennie
 
 	* release 1.17
 	* QueryData.pm: update documentation
@@ -166,16 +176,16 @@
 	separator (PC/Unix)
 	* QueryData.pm (version): new function
 	
-2002-04-05  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-05  Jason Rennie
 
 	* QueryData.pm (querySense, queryWord): new functions
 	* QueryData.pm (query): Deprecated.  Use querySense instead.
 
-2002-04-03  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-03  Jason Rennie
 
 	* README: add citation
 
-2002-04-02  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-02  Jason Rennie
 
 	* QueryData.pm: revise man page
 	* test.pl: update numbering
@@ -183,28 +193,27 @@
 	* QueryData.pm (open_data): try both Unix and PC file names
 	* release 1.16
 
-2002-04-01  Jason Rennie <jrennie@ai.mit.edu>
+2002-04-01  Jason Rennie
 
 	* QueryData.pm (load_exclusions): words may have multiple listed
 	exclusions in the *.exc files; fix code to read in all of them;
-	bug reported by Bano <satanjeev@yahoo.com>
+	bug reported by Bano
 	* release 1.15
 	
-2002-03-21  Jason Rennie <jrennie@ai.mit.edu>
+2002-03-21  Jason Rennie
 
 	* QueryData.pm (offset): use 'defined' to check for good query string;
-	bug ("0#n#1") discovered by Bano <satanjeev@yahoo.com>
+	bug ("0#n#1") discovered by Bano
 	* release 1.14
 
-2001-11-25  Jason Rennie <jrennie@ai.mit.edu>
+2001-11-25  Jason Rennie
 
 	* QueryData.pm (get_word): eliminate syntactic marker (previously
 	fixed this in get_all_words); bug discovered by Satanjeev Banerjee
-	<bane0025@d.umn.edu>
 	* test.pl: add syntactic marker check (authority#n#4)
 	* release 1.13
 
-2001-11-22  Jason Rennie <jrennie@ai.mit.edu>
+2001-11-22  Jason Rennie
 
 	* test.pl ($wnDir): use WNHOME environment variable
 	* test.pl: update tests for WordNet 1.7; identify which tests work
@@ -212,66 +221,66 @@
 	* README (CUSTOM DIRECTORY): new section
 	* release 1.12
 
-2001-11-22  Eric Joanis <joanis@cs.toronto.edu>
+2001-11-22  Eric Joanis
 
 	* QueryData.pm (remove_duplicates): new function
 	* QueryData.pm (forms): use it
 
-2001-09-12  John Asmuth <jasmuth@clarity.princeton.edu>
+2001-09-12  John Asmuth
 
 	* QueryData.pm ($wordnet_dir): use WNHOME environment variable
 
-2001-02-26  Luigi Bianchi <lbianchi@yorku.ca>
+2001-02-26  Luigi Bianchi
 
 	* README: added an installation procedure for Windows
 
-2000-09-12  Jason Rennie <jrennie@ai.mit.edu>
+2000-09-12  Jason Rennie
 
 	* QueryData.pm (list_all_words): new function
 	* test.pl: add test for list_all_words
 
-2000-05-04  Jason Rennie <jrennie@ai.mit.edu>
+2000-05-04  Jason Rennie
 
 	* QueryData.pm (_initialize, query): explicitly set value of input
 	record separator; restore old value before returning
 
-2000-03-31  Eric Joanis <joanis@cs.toronto.edu>
+2000-03-31  Eric Joanis
 
 	* QueryData.pm (%relation_sym): '#' is holonym symbol, '%' is
 	meronym symbol.  Previously had this backwards.
 
-2000-03-28  Eric Joanis <joanis@cs.toronto.edu>
+2000-03-28  Eric Joanis
 
 	* QueryData.pm (%relation_sym): don't escape dollar-sign
 	* QueryData.pm (get_all_words): fix problems with "new to(p)"
 	by removing "(p)"
 
-2000-03-22  Jason Rennie <jrennie@ai.mit.edu>
+2000-03-22  Jason Rennie
 
 	* QueryData.pm (offset): new function
 	* test.pl: add test for offset
 
-2000-03-21  Jason Rennie <jrennie@ai.mit.edu>
+2000-03-21  Jason Rennie
 
 	* QueryData.pm (get_pointers, get_all_words): fix minor bug in
 	data file parsing
 
-2000-03-10  Jason Rennie <jrennie@ai.mit.edu>
+2000-03-10  Jason Rennie
 
 	* test.pl: Test for new glos code
 
-2000-03-10  John Matiasek <john@ai.univie.ac.at>
+2000-03-10  John Matiasek
 
 	* QueryData.pm: Allow access to glossary definitions (glos)
 
-2000-02-22  Jason Rennie <jrennie@ai.mit.edu>
+2000-02-22  Jason Rennie
 
 	* QueryData.pm: Rewrite documentation; disallow long relation names
 	* QueryData.pm (query): use single regex (like valid_forms);
 	clean up code a bit
 	* QueryData.pm (level): new function
 
-2000-02-02  Keith J. Miller  <keith@mitre.org>
+2000-02-02  Keith J. Miller
 
 	* QueryData.pm (forms): make consistent with query syntax;
 	don't return immediately if we find a morph exclusion entry
@@ -279,11 +288,11 @@
 	* test.pl: make tests consistent with changes, add checks for
 	new function
 
-1999-10-22  Jason Rennie  <jrennie@ai.mit.edu>
+1999-10-22  Jason Rennie
 
 	* QueryData.pm: update documentation to look a bit nicer
 
-1999-09-15  Jason Rennie  <jrennie@ai.mit.edu>
+1999-09-15  Jason Rennie
 
 	* README: make specific to QueryData
 	* README: rewrite to correspond to Query
@@ -293,7 +302,7 @@
 	* QueryData.pm: allow long relation names; allow long POS names;
 	check for illegal POS
 
-1999-09-14  Jason Rennie  <jrennie@ai.mit.edu>
+1999-09-14  Jason Rennie
 
 	* my_test.pl: nice test suite for QueryData 1.2.
 	* QueryData.pm: first draft of direct access to WordNet data
@@ -302,11 +311,11 @@
 	integrate forms into query.  query requires the word form to be
 	exactly like that in WordNet (although caplitalization may differ)
 
-1999-09-13  Jason Rennie  <jrennie@ai.mit.edu>
+1999-09-13  Jason Rennie
 
 	* my_test.pl: test corpus for QueryData
 
-1999-09-13  Jason Rennie  <jrennie@ai.mit.edu>
+1999-09-13  Jason Rennie
 
 	* QueryData.pm: access data files directly; us a more OO style of
 	coding; initialization (new) code is pretty much done; forms is
