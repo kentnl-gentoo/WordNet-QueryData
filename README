@@ -68,24 +68,14 @@ WINDOWS
 
 Here's the install proceedure suggested by Luigi Bianchi, lbianchi AT
 yorku.ca, for Win95.  Let me, jrennie AT ai.mit.edu, know if this
-doesn't work for other Windows variants.  NOTE: step 3 should no
-longer be necessary.
+doesn't work for other Windows variants.
 
   1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.
   2) Create the dir WordNet off the distribution, i.e. 
-     /djgpp/lib/perl5/site/WordNet-QueryData-1.10/WordNet  and copy
+     /djgpp/lib/perl5/site/WordNet-QueryData-1.27/WordNet  and copy
      QueryData.pm in it.
-  3) In the wordNet distribution directory ( /wn16/dict ) rename (or copy,
-     if other packages depend on the distribution filenames) all the
-     *.idx files index.* and all the *.dat files data.* 
-  4) Follow your instructions as per your README, i.e. replace 
+  3) Follow your instructions as per your README, i.e. replace 
      "/usr/local/dict" with "/wn16/dict" in test.pl
-  5) Start bash etc. 
-  
-  I noticed that, despite the final success, perl complains that it can't 
-  find perl5 (though in fact it does--just a question of how the version is 
-  reported); that MANIFEST and README are missing (though they are there with 
-  test.pl), and that blib already exists (it does).
 
 COPYRIGHT
 ---------

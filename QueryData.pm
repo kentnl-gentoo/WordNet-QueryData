@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.27 2002/12/04 05:57:15 jrennie Exp $
+# $Id: QueryData.pm,v 1.28 2003/04/03 08:00:36 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.27 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.28 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -154,9 +154,6 @@ my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\Wo
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
-# WordNet database version
-my $version;
-
 END { } # module clean-up code here (global destructor)
 
 ###############
@@ -164,7 +161,7 @@ END { } # module clean-up code here (global destructor)
 ###############
 
 # report WordNet version
-sub version { return $version; }
+sub version { my $self = shift; return $self->{version}; }
 
 # convert to lower case, translate ' ' to '_' and eliminate any
 # syntactic marker
@@ -276,7 +273,7 @@ sub loadIndex#
 	
 	my $line;
 	while ($line = <$fh>) {
-	    $version = $1 if (!defined($version) and $line =~ m/WordNet (\S+)/);
+	    $self->{version} = $1 if ($line =~ m/WordNet (\S+)/);
 	    last if ($line =~ m/^\S/);
 	}
 	while (1) {
@@ -292,8 +289,8 @@ sub loadIndex#
 	    last if (!$line);
 	}
     }
-    warn "*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($version eq "1.6");
-    warn "*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($version eq "1.7");
+    warn "*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.6");
+    warn "*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.7");
 }
 
 # Open data files and return file handles
@@ -853,6 +850,8 @@ sub queryWord#
 {
     my $self = shift;
     my $string = shift;
+
+    warn "queryWord: WARNING: certain aspects of this function are broken.  It needs\n a rewrite.  Use at your own risk.\n";
     
     # Ensure that input record separator is "\n"
     my $old_separator = $/;

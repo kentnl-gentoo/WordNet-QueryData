@@ -1,5 +1,14 @@
 2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
 
+	* release 1.28
+
+	* QueryData.pm ($version): make into a package variable
+
+	* QueryData.pm (queryWord): die if called; queryWord does not work
+	as it should and needs a major rewrite
+
+2002-12-04  Jason Rennie <jrennie@ai.mit.edu>
+
 	* release 1.27
 	
 	* test.pl: add detachment tests; postpone queryWord tests
