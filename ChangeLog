@@ -1,0 +1,28 @@
+1999-09-15  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+
+	* README: make specific to QueryData
+	* README: rewrite to correspond to Query
+	* test.pl: rename from my_test.pl
+	* my_test.pl: add test 12; test long POS names
+	* QueryData.pm (get_all_words): fix
+	* QueryData.pm: allow long relation names; allow long POS names;
+	check for illegal POS
+
+1999-09-14  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+
+	* my_test.pl: nice test suite for QueryData 1.2.
+	* QueryData.pm: first draft of direct access to WordNet data
+	files; 'new'ing is slow; about 15 seconds on my PII/400.  Memory
+	consumption using WordNet 1.6 is appx. 16M.  Still need to
+	integrate forms into query.  query requires the word form to be
+	exactly like that in WordNet (although caplitalization may differ)
+
+1999-09-13  Jason Rennie  <jrennie@karhu.ai.mit.edu>
+
+	* my_test.pl: test corpus for QueryData
+
+1999-09-13  Jason Rennie  <jrennie@ai.mit.edu>
+
+	* QueryData.pm: access data files directly; us a more OO style of
+	coding; initialization (new) code is pretty much done; forms is
+	done

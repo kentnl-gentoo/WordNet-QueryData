@@ -1,0 +1,58 @@
+WordNet::QueryData perl module
+------------------------------
+
+Provides an object-oriented perl interface to the full WordNet system.
+This is my second attempt at a perl interface to WN.  This draft
+includes full support for all parts of WordNet (nouns, verbs,
+adjectives and adverbs) and is very efficient after the initialization
+step (where index and morph. exc. files are loaded).  This
+initialization step will prove to be annoying if simply want to 'play'
+with WordNet.  On my PII/400, it takes about 15 seconds and 16 megs of
+memory to initialize.  After that, however, things are blazingly fast
+and efficient.  I haven't done any tests, but all file access is done
+with fseek calls and takes full advantage of the static nature of the
+WordNet data.* files.
+
+See the man page ('perldoc WordNet::QueryData' after having run
+'make') for information on all that is possible.
+
+PREREQUISITES
+-------------
+
+Perl5
+WordNet 1.6 (http://www.cogsci.princeton.edu/~wn/obtain/)
+
+Strictly speaking, only the WN 1.6 data files are required (everything
+in the 'dict' directory), but you might as well install all of WN 1.6
+while you're at it.
+
+BUILD & INSTALL
+---------------
+
+To build do:
+
+perl Makefile.PL
+make
+make test
+
+To install do:
+
+make install
+
+DOCUMENTATION
+-------------
+
+The included man page (do 'perldoc WordNet::Query' to extract) should
+give you a good idea of how to use this module and what it is good
+for.
+
+WordNet perl modules can be found at
+http://www.ai.mit.edu/~jrennie/WordNet/
+
+COPYRIGHT
+---------
+
+Copyright 1999 Jason Rennie <jrennie@ai.mit.edu>  All rights reserved.
+
+This module is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
