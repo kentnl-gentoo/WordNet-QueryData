@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.34 2004/08/24 15:13:32 jrennie Exp $
+# $Id: QueryData.pm,v 1.35 2004/08/25 20:15:26 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.34 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.35 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -272,7 +272,11 @@ sub loadExclusions#
 	{
 	    my ($exc, @word) = split(/\s+/, $line);
 	    next if (!@word);
-	    @{$self->{morph_exc}->[$i]->{$exc}} = @word;
+	    if (!defined($self->{morph_exc}->[$i]->{$exc})) {
+		@{$self->{morph_exc}->[$i]->{$exc}} = @word;
+	    } else {
+		push @{$self->{morph_exc}->[$i]->{$exc}}, @word;
+	    }
 	}
     }
 }

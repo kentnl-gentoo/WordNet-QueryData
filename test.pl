@@ -2,12 +2,12 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.31 2004/08/24 15:13:32 jrennie Exp $
+# $Id: test.pl,v 1.32 2004/08/25 20:15:26 jrennie Exp $
 
 my $i = 1;
 BEGIN { 
     $| = 1;
-    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..49\n";
+    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..50\n";
 }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
@@ -21,7 +21,7 @@ print "ok ", $i++, "\n";
 print "Loading index files.  This may take a while...\n";
 # Uses $WNHOME environment variable
 my $wn = WordNet::QueryData->new;
-#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-1.7.1");
+#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.0");
 
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
@@ -182,6 +182,8 @@ if ($ver eq "1.6") {
     ($wn->querySense('idiom#n#2', 'dmtu'))[0] eq 'euphonious#a#2'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     ($wn->querySense('manchuria#n#1', 'dmtr'))[0] eq 'Chino-Japanese_War#n#1'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    ($wn->validForms('involucra'))[0] eq 'involucre#n'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     $wn->lexname('manchuria#n#1') eq 'noun.location'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";

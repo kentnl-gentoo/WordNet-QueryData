@@ -1,3 +1,12 @@
+2004-08-25  Jason Rennie
+
+	* release 1.35
+	* QueryData.pm (loadExclusions): if there are two entries for the
+	same word, append to the list created by earlier entries (thanks
+	for Jerry D. Hedden for spotting the bug (validForms("involucra")
+	didn't produce involucre#n)
+	* test.pl: add involucra->involucre test
+
 2004-08-24  Jason Rennie
 
 	* release 1.34
