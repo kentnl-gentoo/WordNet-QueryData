@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.36 2004/11/10 20:00:43 jrennie Exp $
+# $Id: QueryData.pm,v 1.37 2004/12/01 19:55:03 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -26,6 +26,8 @@ package WordNet::QueryData;
 use strict;
 use Carp;
 use FileHandle;
+use Search::Dict;
+use File::Spec;
 use Exporter;
 
 ##############################
@@ -40,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.36 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.37 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -61,6 +63,7 @@ my %pos_map = ('noun'      => 'n',
 	       # Adj satellite is essentially just an adjective
 	       's'         => 'a',
 	       '3'         => 'a',
+	       '5'         => 'a', # adj satellite
 	       'adverb'    => 'r',
 	       'adv'       => 'r',
 	       'r'         => 'r',
@@ -739,6 +742,40 @@ sub lexname#
     return $self->{lexMap}->{$lexfn};
 }
 
+# Return the frequency count for the type (3) query string
+# Added by mich0212 (12/1/04)
+sub frequency
+{
+    my ($self, $string) = @_;
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)\#([^\#]+)\#([^\#]+)$/;
+
+    unless (defined $word and defined $pos and defined $sense) {
+	croak "(frequency) Query string is not a valid type (3) string";
+    }
+
+    warn "(frequency) word=$word pos=$pos sense=$sense\n" if $self->{verbose};
+
+    my $dp = $self->dataPath;
+    my $cntfile = File::Spec->catfile ($dp, 'cntlist.rev');
+    open CFH, "<$cntfile" or die "Cannot open $cntfile: $!";
+    
+    # look() seek()s to the right position in the file
+    my $position = Search::Dict::look (*CFH, "$word\%", 0, 0);
+    while (<CFH>) {
+	if (/^$word\%(\d+):[^ ]+ (\d+) (\d+)/) {
+	    next unless $pos_map{$1} eq $pos;
+	    next unless $2 eq $sense;
+	    close CFH;
+	    return $3;
+	}
+	else {
+	    last;
+	}
+    }
+    close CFH;
+    return 0;
+}
+
 # DEPRECATED!  DO NOT USE!  Use "querySense" instead.
 sub query
 {
@@ -1211,6 +1248,10 @@ texts."
 
 "lexname" accepts a type (3) query string and returns the lexname of
 the sense; see WordNet lexnames man page for more information.
+
+"frequency" accepts a type (3) query string and returns the frequency
+count of the sense from tagged text; see WordNet cntlist man page
+for more information.
 
 See test.pl for additional example usage.
 

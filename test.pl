@@ -2,12 +2,12 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.32 2004/08/25 20:15:26 jrennie Exp $
+# $Id: test.pl,v 1.33 2004/12/01 19:55:03 jrennie Exp $
 
 my $i = 1;
 BEGIN { 
     $| = 1;
-    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..50\n";
+    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..53\n";
 }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
@@ -188,5 +188,12 @@ if ($ver eq "1.6") {
     $wn->lexname('manchuria#n#1') eq 'noun.location'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     $wn->lexname('idiom#n#2') eq 'noun.communication'
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    # frequency() tests
+    $wn->frequency('thirteenth#a#1') == 1
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    $wn->frequency('night#n#2') == 217
+	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    $wn->frequency('cnn#n#1') == 0
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 }
