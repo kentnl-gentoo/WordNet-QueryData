@@ -17,30 +17,34 @@ See the man page ('perldoc WordNet::QueryData' after having run
 PREREQUISITES
 -------------
 
-Perl5
-WordNet "Unix" Database Package version 1.6 or 1.7 (obtain from
-  http://www.cogsci.princeton.edu/~wn/obtain/)
-
-Strictly speaking, only data files are required (everything in the
-'dict' directory).
+- Perl5
+- WordNet Database Package version 1.6 or 1.7 (only dictionary files
+  are absolutely necessary).
 
 BUILD & INSTALL (Unix)
 ----------------------
 
-To install WordNet::QueryData to the standard place on a unix-like
-system, do:
+See below for Windows install.
 
-perl Makefile.PL
-make
-make test
+Installation uses the perl MakeMaker utility ('perldoc
+ExtUtils::MakeMaker').  To build and test the distribution do:
 
-Before running 'make test', you will need to modify test.pl to indicate
-the correct location of the WordNet 'dict' directory.  The default
-location is /usr/local/dict.
+     perl Makefile.PL
+     make
+     make test
 
-To install do:
+If "make test" doesn't work at all ("not ok 1"), you may not have
+the WNHOME environment variable defined correctly.  Read the QueryData
+(perldoc QueryData.pm) to find out how to tell it where your
+WordNet database is located (you'll need to edit test.pl).
 
-make install
+If any of the tests fail, send e-mail to the wn-perl mailing list (see
+below).
+
+If the tests run okay, install with (this may need to be run as root):
+
+     make install
+
 
 CUSTOM DIRECTORY
 ----------------
@@ -78,15 +82,13 @@ doesn't work for other Windows variants.
 DOCUMENTATION
 -------------
 
-The included man page (do 'perldoc WordNet::QueryData' to extract) should
-give you a good idea of how to use this module and what it is good
-for.
+Read the included man page (do 'perldoc WordNet::QueryData' to
+extract) for general information and an introduction.
 
-If you are upgrading from an older version, check the ChangeLog file
+If you are upgrading from an older version, look at the ChangeLog file
 for information about changes to the code.
 
-WordNet perl modules can be found at
-http://www.ai.mit.edu/~jrennie/WordNet/
+The module's home page is http://www.ai.mit.edu/people/jrennie/WordNet/
 
 There is a mailing list, http://groups.yahoo.com/group/wn-perl, for
 the discussion of WordNet::QueryData.  Send mail to
@@ -95,8 +97,22 @@ wn-perl-subscribe@yahoogroups.com to subscribe.
 COPYRIGHT
 ---------
 
-Copyright (C) 2000,2001,2002 Jason Rennie <jrennie@ai.mit.edu> All rights
+Copyright (C) 2000, 2001, 2002 Jason Rennie <jrennie@ai.mit.edu> All rights
 reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+CITATION
+--------
+
+If you use this software as a contribution to a published work, please
+cite it like this:
+
+@misc{Rennie00
+,author = "Jason Rennie"
+,title = "WordNet::QueryData: a Perl module for accessing the WordNet 
+database"
+,howpublished = "http://www.ai.mit.edu/people/jrennie/WordNet"
+,year = 2000
+}

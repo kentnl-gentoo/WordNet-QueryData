@@ -1,15 +1,48 @@
+2002-04-07  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.17
+	* QueryData.pm: update documentation
+	* test.pl: update to use new functions; increment counter to print
+	test numbers; only run relevant tests (use version)
+	* QueryData.pm (relSymName, relNameSym): new maps
+	* QueryData.pm (getSense, getWord, getSensePointers,
+	getWordPointers, querySense, queryWord): important new query
+	functions; distinguish between sense relations and word/lemma
+	relations
+	* QueryData.pm (removeDupliates, getAllSenses, validForms,
+	listAllWords): renamed functions
+	* QueryData.pm (remove_duplicates, get_all_words, valid_forms,
+	list_all_words, get_word, query, get_pointers): deprecated
+	functions
+	* QueryData.pm (lower): strip syntactic marker (if any)
+	* QueryData.pm (loadExclusions, loadIndex, openData): correctly
+	handle WNSEARCHDIR environment variable; use correct directory
+	separator (PC/Unix)
+	* QueryData.pm (version): new function
+	
+2002-04-05  Jason Rennie <jrennie@ai.mit.edu>
+
+	* QueryData.pm (querySense, queryWord): new functions
+	* QueryData.pm (query): Deprecated.  Use querySense instead.
+
+2002-04-03  Jason Rennie <jrennie@ai.mit.edu>
+
+	* README: add citation
+
 2002-04-02  Jason Rennie <jrennie@ai.mit.edu>
 
 	* QueryData.pm: revise man page
 	* test.pl: update numbering
 	* QueryData.pm (load_index): try both Unix and PC file names
 	* QueryData.pm (open_data): try both Unix and PC file names
+	* release 1.16
 
 2002-04-01  Jason Rennie <jrennie@ai.mit.edu>
 
 	* QueryData.pm (load_exclusions): words may have multiple listed
 	exclusions in the *.exc files; fix code to read in all of them;
 	bug reported by Bano <satanjeev@yahoo.com>
+	* release 1.15
 	
 2002-03-21  Jason Rennie <jrennie@ai.mit.edu>
 
