@@ -1,7 +1,6 @@
 # -*- perl -*-
 #
 # Package to interface with WordNet (wn) command line program
-# written by Jason Rennie <jrennie@mitre.org>, July 1999
 
 # Run 'perldoc' on this file to produce documentation
 
@@ -10,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.17 2002/04/08 04:39:06 jrennie Exp $
+# $Id: QueryData.pm,v 1.19 2002/06/11 13:08:35 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -20,7 +19,7 @@
 # - use 'warn' to report warning & progress messages
 # - begin 'warn' messages with "(fn)" where "fn" is function name
 # - all non-trivial function calls should receive $self
-# - we ignore syntactic markers
+# - syntactic markers are ignored
 
 package WordNet::QueryData;
 
@@ -41,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.17 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.19 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -167,12 +166,12 @@ END { } # module clean-up code here (global destructor)
 # report WordNet version
 sub version { return $version; }
 
-# convert to lower case, translate '_' to ' ' and eliminate any
+# convert to lower case, translate ' ' to '_' and eliminate any
 # syntactic marker
 sub lower#
 { 
     my $word = shift;
-    $word =~ tr/A-Z_/a-z /;
+    $word =~ tr/A-Z /a-z_/;
     $word =~ s/\(.*\)$//;
     return $word;
 }
@@ -329,88 +328,109 @@ sub removeDuplicates
     }
 }
 
+# transforms ending according to rules of detachment
+# (http://www.cogsci.princeton.edu/~wn/doc/man1.7/morphy.htm).
+# Assumes a single token (no collocations).
+# "#pos#sense" qualification NOT appended to returned words
+sub tokenDetach
+{
+    my ($self, $string) = @_;
+    # The query string (word, pos and sense #)
+    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+    warn "(forms) Sense number ignored\n" if (defined($sense));
+    die "(tokenDetach) bad part-of-speech: pos=$pos word=$word sense=$sense" if (!defined($pos) or !defined($pos_num{$pos}));
+    my @detach; # list of modified words
+    if ($pos_num{$pos} == 1)
+    {
+	push @detach, $1 if ($word =~ m/^(\w+)s$/);
+	push @detach, $1 if ($word =~ m/^(\w+s)es$/);
+	push @detach, $1 if ($word =~ m/^(\w+x)es$/);
+	push @detach, $1 if ($word =~ m/^(\w+z)es$/);
+	push @detach, $1 if ($word =~ m/^(\w+ch)es$/);
+	push @detach, $1 if ($word =~ m/^(\w+sh)es$/);
+    }
+    elsif ($pos_num{$pos} == 2)
+    {
+	push @detach, $1 if ($word =~ m/^(\w+)s$/);
+	push @detach, $1."y" if ($word =~ m/^(\w+)ies$/);
+	push @detach, $1 if ($word =~ m/^(\w+e)s$/);
+	push @detach, $1 if ($word =~ m/^(\w+)es$/);
+	push @detach, $1 if ($word =~ m/^(\w+e)d$/);
+	push @detach, $1 if ($word =~ m/^(\w+)ed$/);
+	push @detach, $1."e" if ($word =~ m/^(\w+)ing$/);
+	push @detach, $1 if ($word =~ m/^(\w+)ing$/);
+    }
+    elsif ($pos_num{$pos} == 3)
+    {
+	push @detach, $1 if ($word =~ m/^(\w+)er$/);
+	push @detach, $1 if ($word =~ m/^(\w+)est$/);
+	push @detach, $1 if ($word =~ m/^(\w+e)r$/);
+	push @detach, $1 if ($word =~ m/^(\w+e)st$/);
+    }
+    $self->remove_duplicates(\@detach);
+    return @detach;
+}
+
+
 # Generate list of all possible forms of how word may be found in WordNet
 sub forms#
 {
     my ($self, $string) = @_;
-    
+
+    my @rtn;
     # The query string (word, pos and sense #)
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(forms) Sense number ignored\n" if (defined($sense));
     warn "(forms) WORD=$word POS=$pos\n" if ($self->{verbose});
-    die "(forms) Bad part-of-speech: $pos" if (!defined($pos_num{$pos}));
+    die "(forms) Bad part-of-speech: pos=$pos" if (!defined($pos) or !defined($pos_num{$pos}));
     $pos = $pos_num{$pos};
     $word = lower ($word);
-    
-    my @token = split (/\s+/, $word);
-    my @token_form;
-    
-    # Find all possible forms for all tokens
-    for (my $i=0; $i < @token; $i++)
-    {
-	# include original form and morph. exceptions
-	push @{$token_form[$i]}, $token[$i];
-	push @{$token_form[$i]}, @{$self->{morph_exc}->[$pos]->{$token[$i]}} if (defined ($self->{morph_exc}->[$pos]->{$token[$i]}));
-	
-	if ($pos_num{$pos} == 1)
-	{
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)s$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+s)es$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+x)es$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+z)es$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+ch)es$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+sh)es$/);
+
+    # if word is in morph exclusion table, return only that entry
+    if (defined ($self->{morph_exc}->[$pos]->{$word})) {
+	my @exc = @{$self->{morph_exc}->[$pos]->{$word}};
+	for (my $i=0; $i < @exc; ++$i) {
+	    $exc[$i] .= "#".$pos_map{$pos};
 	}
-	elsif ($pos_num{$pos} == 2)
+	push @rtn, @exc;
+    } else {
+	# ISSUE: we don't check morphological exclusion table for components
+	# of the colocation.  This may be bad---hard to say from the "morphy"
+	# web page
+
+	# otherwise, use rules of detachment to find forms
+	my @token = split (/\s+/, $word);
+	my @detach;
+	for (my $i=0; $i < @token; $i++)
 	{
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)s$/);
-	    push @{$token_form[$i]}, $1."y" if ($token[$i] =~ m/^(\w+)ies$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)s$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)es$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)d$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)ed$/);
-	    push @{$token_form[$i]}, $1."e" if ($token[$i] =~ m/^(\w+)ing$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)ing$/);
+	    push @{$detach[$i]}, $token[$i];
+	    push @{$detach[$i]}, tokenDetach ($self, $token[$i]."#".$pos);
 	}
-	elsif ($pos_num{$pos} == 3)
-	{
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)er$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+)est$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)r$/);
-	    push @{$token_form[$i]}, $1 if ($token[$i] =~ m/^(\w+e)st$/);
+	# Generate all possible token sequences (collocations)
+	my @index; for (my $i=0; $i < @token; $i++) { $index[$i] = 0; }
+	while (1) {
+	    my $colloc;
+	    # String together one sequence of possibilities
+	    for (my $i=0; $i < @token; $i++) {
+		$colloc .= "_".$detach[$i]->[$index[$i]] if (defined($colloc));
+		$colloc = $detach[$i]->[$index[$i]] if (!defined($colloc));
+	    }
+	    push @rtn, $colloc."#".$pos_map{$pos};
+	    
+	    # think "adder" (computer architechture)
+	    my $i;
+	    for ($i=0; $i < @token; $i++) {
+		$index[$i]++;
+		last if ($index[$i] < @{$detach[$i]});
+		$index[$i] = 0;
+	    }
+	    # If we had to reset every index, we're done
+	    last if ($i >= @token);
 	}
-        $self->remove_duplicates($token_form[$i]);
     }
-    
-    # Generate all possible token sequences (collocations)
-    my @index; for (my $i=0; $i < @token; $i++) { $index[$i] = 0; }
-    my @word_form;
-    while (1) {
-	my $this_word;
-	# String together one sequence of possibilities
-	for (my $i=0; $i < @token; $i++) {
-	    $this_word .= " ".$token_form[$i]->[$index[$i]]
-		if (defined($this_word));
-	    $this_word = $token_form[$i]->[$index[$i]]
-		if (!defined($this_word));
-	}
-	push @word_form, $this_word;
-	
-	# Increment counter
-	my $i;
-	for ($i=0; $i < @token; $i++) {
-	    $index[$i]++;
-	    # Exit loop if we don't need to increment next index
-	    last if ($index[$i] < @{$token_form[$i]});
-	    # Otherwise, reset this value, increment next index
-	    $index[$i] = 0;
-	}
-	# If we had to reset every index, we have tried all possibilities
-	last if ($i >= @token);
-    }
-    push @word_form, @{$self->{morph_exc}->[$pos]->{$word}}
-    if (@token > 1 and (defined ($self->{morph_exc}->[$pos]->{$word}))); 
-    return @word_form;
+    # make sure that all the words are lower case and use underscores '_'
+    for (my $i=0; $i < @rtn; ++$i) { $rtn[$i] = lower($rtn[$i]); }
+    return @rtn;
 }
 
 # DEPRECATED!  DO NOT USE!  Use "getSensePointers" instead.
@@ -463,7 +483,7 @@ sub getSensePointers#
 }
 
 # $line is line from data file; $ptr is a reference to a hash of
-# sybols; $word is query word/lemma; returns list of word#pos strings
+# symbols; $word is query word/lemma; returns list of word#pos strings
 sub getWordPointers#
 {
     my ($self, $line, $ptr, $word) = @_;
@@ -779,7 +799,7 @@ sub querySense#
 	my $line = <$fh>;
 	
 	if ($rel eq "glos") {
-	    m/.*\|\s*(.*)$/;
+	    $line =~ m/.*\|\s*(.*)$/;
 	    $rtn[0] = $1;
 	} elsif ($rel eq "syns") {
 	    @rtn = $self->getAllSenses ($offset, $pos);
@@ -791,7 +811,7 @@ sub querySense#
 	if (defined($self->{"index"}->[$pos_num{$pos}]->{$word})) {
 	    my @offset = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word};
 	    for (my $i=0; $i < @offset; $i++) {
-		push @rtn, "$string\#".($i+1);
+		push @rtn, "$word\#$pos\#".($i+1);
 	    }
 	}
     } elsif (defined($word)) {
@@ -871,7 +891,7 @@ sub validForms#
 	if (!defined($pos_map{$pos}));
     
     @possible_forms = $self->forms ("$word#$pos");
-    @valid_forms = grep $self->querySense ("$_#$pos"), @possible_forms;
+    @valid_forms = grep $self->querySense ($_), @possible_forms;
     
     return @valid_forms;
 }
@@ -928,7 +948,7 @@ WordNet::QueryData - direct perl interface to WordNet database
   print "Senses: ", join(", ", $wn->querySense("run#v")), "\n";
   print "Forms: ", join(", ", $wn->validForms("lay down#v")), "\n";
   print "Noun count: ", scalar($wn->listAllWords("noun")), "\n";
-  print "Antonyms: ", join(", ", $wn->queryWord("affirm#v")), "\n";
+  print "Antonyms: ", join(", ", $wn->queryWord("affirm#v", "ants")), "\n";
 
 =head1 DESCRIPTION
 
@@ -953,8 +973,8 @@ you invoke the "new" function.
 
 QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  By default, QueryData assumes that WordNet data files
-are located in WNHOME/WNSEARCHDIR (WNHOME\WNSEARCHDIR on PC), where
-WNHOME defaults to "/usr/local/wordnet1.7" on Unix and "C:\wn17" on
+are located in WNHOME/WNSEARCHDIR (WNHOME\WNSEARCHDIR on a PC), where
+WNHOME defaults to "/usr/local/wordnet1.7" on Unix and "C:\wn17" on a
 PC.  WNSEARCHDIR defaults to "dict".  Normally, all you have to do is
 to set the WNHOME variable to the location where you unpacked your
 WordNet distribution.  The database files are always unpacked to the
@@ -1014,7 +1034,7 @@ second argument, a relation.  Possible relations are:
 
 When called in this manner, querySense will return a list of related
 senses.  When queryWord is called with (2), it requires a relation and
-will return a list of related words (word#pos).
+will return a list of related words (in the form of (2)).
 
 =head2 OTHER FUNCTIONS
 
@@ -1030,7 +1050,7 @@ necessarily the shortest or longest) to the root in the hypernym
 directed acyclic graph.
 
 "offset" accepts a (3) query string and returns the binary offset of
-that sense's location in the corresponding data file.
+that sense''s location in the corresponding data file.
 
 See test.pl for additional example usage.
 
@@ -1041,8 +1061,7 @@ index.noun/noun.idx, etc.)
 
 =head1 COPYRIGHT
 
-Copyright 2000, 2001, 2002 Jason Rennie <jrennie@ai.mit.edu> All
-rights reserved.
+Copyright 2000, 2001, 2002 Jason Rennie.  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,3 +1,22 @@
+2002-06-11  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.19
+	* test.pl: add tests to cover changes
+	* QueryData.pm (tokenDetach): new function
+	* QueryData.pm (forms): if word is in morph exclusion table, return
+	that entry, otherwise use rules of detachment; don't check morph excl.
+	table for parts of collocations (may want to change this later)
+	* QueryData.pm (querySense): given word#pos query, use underscores for
+	spaces in any retured words
+	* QueryData.pm (lower): translate ' ' to '_'
+
+2002-04-12  Jason Rennie <jrennie@ai.mit.edu>
+
+	* release 1.18
+	* QueryData.pm (querySense): fix bug in "glos" lookup (no varaible
+	for pattern match, m//)
+	* test.pl: some tests still used old functions; use new ones
+	
 2002-04-07  Jason Rennie <jrennie@ai.mit.edu>
 
 	* release 1.17

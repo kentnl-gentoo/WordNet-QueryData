@@ -59,9 +59,10 @@ Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
 WINDOWS
 -------
 
-Here's the install proceedure suggested by Luigi Bianchi
-<lbianchi@yorku.ca> for Win95.  Let me <jrennie@ai.mit.edu> know if this
-doesn't work for other Windows variants.
+Here's the install proceedure suggested by Luigi Bianchi, lbianchi AT
+yorku.ca, for Win95.  Let me, jrennie AT ai.mit.edu, know if this
+doesn't work for other Windows variants.  NOTE: step 3 should no
+longer be necessary.
 
   1) Unpack your distribution anywhere.  I did in  /djgpp/lib/perl5/site.
   2) Create the dir WordNet off the distribution, i.e. 
@@ -97,8 +98,7 @@ wn-perl-subscribe@yahoogroups.com to subscribe.
 COPYRIGHT
 ---------
 
-Copyright (C) 2000, 2001, 2002 Jason Rennie <jrennie@ai.mit.edu> All rights
-reserved.
+Copyright (C) 2000, 2001, 2002 Jason Rennie.  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
