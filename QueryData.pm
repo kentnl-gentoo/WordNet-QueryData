@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.37 2004/12/01 19:55:03 jrennie Exp $
+# $Id: QueryData.pm,v 1.38 2005/05/19 16:30:10 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.37 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.38 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -407,32 +407,32 @@ sub tokenDetach#
     my @detach = ($word); # list of possible forms
     if ($pos_num{$pos} == 1)
     {
-	push @detach, $1 if ($word =~ m/^(\w+)s$/);
-	push @detach, $1 if ($word =~ m/^(\w+s)es$/);
-	push @detach, $1 if ($word =~ m/^(\w+x)es$/);
-	push @detach, $1 if ($word =~ m/^(\w+z)es$/);
-	push @detach, $1 if ($word =~ m/^(\w+ch)es$/);
-	push @detach, $1 if ($word =~ m/^(\w+sh)es$/);
-	push @detach, $1."man" if ($word =~ m/^(\w+)men$/);
-	push @detach, $1."y" if ($word =~ m/^(\w+)ies$/);
+	push @detach, $1 if ($word =~ m/^(.+)s$/);
+	push @detach, $1 if ($word =~ m/^(.+s)es$/);
+	push @detach, $1 if ($word =~ m/^(.+x)es$/);
+	push @detach, $1 if ($word =~ m/^(.+z)es$/);
+	push @detach, $1 if ($word =~ m/^(.+ch)es$/);
+	push @detach, $1 if ($word =~ m/^(.+sh)es$/);
+	push @detach, $1."man" if ($word =~ m/^(.+)men$/);
+	push @detach, $1."y" if ($word =~ m/^(.+)ies$/);
     }
     elsif ($pos_num{$pos} == 2)
     {
-	push @detach, $1 if ($word =~ m/^(\w+)s$/);
-	push @detach, $1."y" if ($word =~ m/^(\w+)ies$/);
-	push @detach, $1 if ($word =~ m/^(\w+e)s$/);
-	push @detach, $1 if ($word =~ m/^(\w+)es$/);
-	push @detach, $1 if ($word =~ m/^(\w+e)d$/);
-	push @detach, $1 if ($word =~ m/^(\w+)ed$/);
-	push @detach, $1."e" if ($word =~ m/^(\w+)ing$/);
-	push @detach, $1 if ($word =~ m/^(\w+)ing$/);
+	push @detach, $1 if ($word =~ m/^(.+)s$/);
+	push @detach, $1."y" if ($word =~ m/^(.+)ies$/);
+	push @detach, $1 if ($word =~ m/^(.+e)s$/);
+	push @detach, $1 if ($word =~ m/^(.+)es$/);
+	push @detach, $1 if ($word =~ m/^(.+e)d$/);
+	push @detach, $1 if ($word =~ m/^(.+)ed$/);
+	push @detach, $1."e" if ($word =~ m/^(.+)ing$/);
+	push @detach, $1 if ($word =~ m/^(.+)ing$/);
     }
     elsif ($pos_num{$pos} == 3)
     {
-	push @detach, $1 if ($word =~ m/^(\w+)er$/);
-	push @detach, $1 if ($word =~ m/^(\w+)est$/);
-	push @detach, $1 if ($word =~ m/^(\w+e)r$/);
-	push @detach, $1 if ($word =~ m/^(\w+e)st$/);
+	push @detach, $1 if ($word =~ m/^(.+)er$/);
+	push @detach, $1 if ($word =~ m/^(.+)est$/);
+	push @detach, $1 if ($word =~ m/^(.+e)r$/);
+	push @detach, $1 if ($word =~ m/^(.+e)st$/);
     }
     $self->removeDuplicates(\@detach);
     return @detach;

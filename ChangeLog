@@ -1,3 +1,9 @@
+2004-11-10  Beata Klebanov
+
+	* release 1.38
+	* QueryData.pm (tokenDetach): change match pattern from \w+ to .+;
+	old code wasn't matching words with hyphens! (e.g. go-karts)
+
 2004-11-10  Jason Michelizzi
 
 	* release 1.37
