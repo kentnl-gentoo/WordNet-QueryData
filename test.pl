@@ -2,12 +2,12 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.34 2005/05/19 16:30:10 jrennie Exp $
+# $Id: test.pl,v 1.35 2005/09/15 23:34:20 jrennie Exp $
 
 my $i = 1;
 BEGIN { 
     $| = 1;
-    print "v1.6: 1..36\nv1.7: 1..38\nv1.7.1: 1..37\nv2.0: 1..54\n";
+    print "v2.0: 1..54\nv2.1: 1..54\n";
 }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
@@ -21,7 +21,7 @@ print "ok ", $i++, "\n";
 print "Loading index files.  This may take a while...\n";
 # Uses $WNHOME environment variable
 my $wn = WordNet::QueryData->new;
-#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.0");
+#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.1/dict");
 
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
@@ -59,9 +59,6 @@ scalar $wn->validForms ("lay down#v") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->validForms ("checked#v") == 1
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-
-my ($foo) = $wn->querySense ("cat#n#1", "glos");
-($foo eq "feline mammal usually having thick soft fur and being unable to roar; domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 scalar $wn->querySense ("child#n#1", "syns") == 12
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -103,99 +100,72 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->queryWord("congruity#n#1", "ants"))[0] eq "incongruity#n#1"
 ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-if ($ver eq "1.6") {
-    scalar $wn->querySense ("cat#noun#7", "syns") == 5
+scalar $wn->querySense("cat#noun#8", "syns") == 6
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->querySense("car#n#1", "mero") == 29
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->querySense("run#verb") == 41
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->forms("axes#1") == 3
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord('shower#v#3', 'deri'))[0] eq 'shower#n#1'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->queryWord('concentrate#v#8', 'deri'))[0] eq 'concentration#n#4'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('curling#n#1', 'domn'))[0] eq 'Scotland#n#1'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('sumo#n#1', 'dmnr'))[0] eq "Japan#n#2"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('bloody#r#1', 'dmnu'))[0] eq 'intensifier#n#1'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('matrix_algebra#n#1', 'domt'))[0] eq "diagonalization#n#1"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('idiom#n#2', 'dmtu'))[0] eq 'euphonious#a#2'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('manchuria#n#1', 'dmtr'))[0] eq 'Chino-Japanese_War#n#1'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->validForms('involucra'))[0] eq 'involucre#n'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+$wn->lexname('manchuria#n#1') eq 'noun.location'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+$wn->lexname('idiom#n#2') eq 'noun.communication'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->validForms("go-karts"))[0] eq "go-kart#n"
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+# frequency() tests
+$wn->frequency('thirteenth#a#1') == 1
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+$wn->frequency('night#n#2') == 217
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+$wn->frequency('cnn#n#1') == 0
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
+if ($ver eq "2.0")
+{
+    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personify#v#3'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
+    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#1'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->offset ("child#n#1") == 7153837
+    scalar $wn->offset("0#n#1") == 12967124
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense ("car#n#1", "mero") == 29
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->listAllWords("noun") == 94474
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense ("run#verb") == 42
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-} elsif ($ver eq "1.7") {
-    scalar $wn->querySense ("cat#noun#7", "syns") == 5
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->queryWord("confuse#v", "ants"))[0] eq "clarify#v"
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->listAllWords("noun") == 107930
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->offset("child#n#1") == 7964378
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("car#n#1", "mero") == 28
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("run#verb") == 41
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->offset("0#n#1") == 11356314
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->forms("axes#1") == 3
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-} elsif ($ver eq "1.7.1") {
-    scalar $wn->querySense ("cat#noun#7", "syns") == 6
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->listAllWords("noun") == 109195
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->offset("child#n#1") == 8144030
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("car#n#1", "mero") == 29
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("run#verb") == 41
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->offset("0#n#1") == 11596022
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->forms("axes#1") == 3
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-} elsif ($ver eq "2.0") {
-    scalar $wn->querySense("cat#noun#8", "syns") == 6
-        ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->listAllWords("noun") == 114648
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     $wn->offset("child#n#1") == 9284669
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("car#n#1", "mero") == 29
+    my ($foo) = $wn->querySense ("cat#n#1", "glos");
+    ($foo eq "feline mammal usually having thick soft fur and being unable to roar; domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+} elsif ($ver eq "2.1")
+{
+    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personhood#n#1'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->querySense("run#verb") == 41
+    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#2'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->offset("0#n#1") ==  12967124
+    scalar $wn->offset("0#n#1") == 13561555
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->forms("axes#1") == 3
+    scalar $wn->listAllWords("noun") == 117097
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personify#v#3'
+    $wn->offset("child#n#1") == 9771320
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->queryWord('shower#v#3', 'deri'))[0] eq 'shower#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->queryWord('concentrate#v#8', 'deri'))[0] eq 'concentration#n#4'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('curling#n#1', 'domn'))[0] eq 'Scotland#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('sumo#n#1', 'dmnr'))[0] eq "Japan#n#2"
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('bloody#r#1', 'dmnu'))[0] eq 'intensifier#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('matrix_algebra#n#1', 'domt'))[0] eq "diagonalization#n#1"
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('idiom#n#2', 'dmtu'))[0] eq 'euphonious#a#2'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('manchuria#n#1', 'dmtr'))[0] eq 'Chino-Japanese_War#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->validForms('involucra'))[0] eq 'involucre#n'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->lexname('manchuria#n#1') eq 'noun.location'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->lexname('idiom#n#2') eq 'noun.communication'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->validForms("go-karts"))[0] eq "go-kart#n"
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    # frequency() tests
-    $wn->frequency('thirteenth#a#1') == 1
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->frequency('night#n#2') == 217
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->frequency('cnn#n#1') == 0
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+    my ($foo) = $wn->querySense ("cat#n#1", "glos");
+   ($foo eq "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 }

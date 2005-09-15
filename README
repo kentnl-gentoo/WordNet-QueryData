@@ -3,19 +3,18 @@ WordNet::QueryData perl module
 
 WordNet::QueryData provides a direct interface to the WordNet database
 files.  It requires the WordNet package
-(http://www.cogsci.princeton.edu/~wn/).  It allows the user direct
-access to the full WordNet semantic lexicon.  All parts of speech are
-supported and access is generally very efficient because the index and
-morphical exclusion tables are loaded at initialization.  This
-initialization step is slow (appx. 10-15 seconds), but queries are
-very fast thereafter---thousands of queries can be completed every
-second.
+(http://wordnet.princeton.edu/).  It allows the user direct access to
+the full WordNet semantic lexicon.  All parts of speech are supported
+and access is generally very efficient because the index and morphical
+exclusion tables are loaded at initialization.  This initialization
+step is slow (appx. 10-15 seconds), but queries are very fast
+thereafter---thousands of queries can be completed every second.
 
 PREREQUISITES
 -------------
 
 - Perl5
-- WordNet Database Package version 2.0 (v1.7.1 may also work)
+- WordNet Database Package version 2.1
 
 DOCUMENTATION
 -------------
@@ -32,7 +31,7 @@ WINDOWS INSTALLATION
 
 This assumes that perl was installed to the default location (C:\perl).
 
-  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.0
+  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.1
   1) Unpack the WordNet QueryData distribution
   2) Create the directory C:\perl\site\lib\WordNet
   3) Copy QueryData.pm to C:\perl\site\lib\WordNet
@@ -77,7 +76,7 @@ Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
 COPYRIGHT
 ---------
 
-Copyright (C) 2000, 2001, 2002 Jason Rennie.  All rights reserved.
+Copyright (C) 1999-2005 Jason Rennie.  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
@@ -95,3 +94,10 @@ database"
 ,howpublished = "http://people.csail.mit.edu/~jrennie/WordNet"
 ,year = 2000
 }
+
+KNOWN BUGS
+----------
+
+validForms does not implement WordNet's morphological processing
+correctly.  Only the first element of the list returned by validForms
+is guaranteed to be valid.  Later elements may not be valid.

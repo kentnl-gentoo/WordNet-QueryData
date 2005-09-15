@@ -1,8 +1,66 @@
+2005-09-15  Jason Rennie
+
+	* release 1.39
+	* test.pl: remove old (1.6, 1.7, 1.71) test
+	* test.pl: update tests for 2.1
+	* QueryData.pm (@indexFilePC,@dataFilePC): delete; no longer used (2.1)
+	* QueryData.pm (@indexFileUnix,@dataFileUnix): remove Unix suffix
+	* QueryData.pm (loadIndex,openData): update for new variable names
+	* QueryData.pm: update instances of WordNet 2.0 to 2.1
+	* QueryData.pm: update beginning of file w/ correct copyright, remove
+	my e-mail address
+	* QueryData.pm (%lexnames): new variable; encodes data from old
+	lexnames file
+	* QueryData.pm (_initialize): don't load lex names
+	* QueryData.pm (loadLexnames): removed; no longer useful
+	* QueryData.pm (lexname): use new %lexnames variable
+	* QueryData.pm ($lexnamesFile): deleted; no longer used
+	
+2005-09-14  Jason Rennie
+
+	* QueryData.pm (indexFilePC,dataFilePC): now considered to be
+	deprecated (since WordNet 2.1 uses unix file names exclusively
+	now)
+	* QueryData.pm: delete deprecated variables and functions
+	* QueryData.pm (%relation_sym): deleted
+	* QueryData.pm (remove_duplicates): deleted
+	* QueryData.pm (get_pointers): deleted
+	* QueryData.pm (get_all_words): deleted
+	* QueryData.pm (get_words): deleted
+	* QueryData.pm (query): deleted
+	* QueryData.pm (valid_forms): deleted
+	* QueryData.pm (list_all_words): deleted
+	* README: update to reflect known validForms bug
+	* README: update copyright dates
+	* QueryData.pm: update documentation to reflect known validForms bug
+	* QueryData.pm: update copyright dates
+
+2005-09-14  Ben Haskell
+
+	* QueryData.pm: Note that many hypo/hyper-nym relationships have
+	been replaced by "instance of" and "has instance" relations; the
+	new querySense arguments are 'inst' and 'hasi'; 'hypes' returns
+	all hypernym and "instance of" relations; 'hypos' returns all
+	hyponyms and "has instance" relations
+	
+	* QueryData.pm: update for WordNet 2.1: add new entries
+	(inst,hypes,hasi,hypos) in %relNameSym and relSymName
+
+2004-11-10  Beata Klebanov
+
+	* QueryData.pm: Identified the following bug:
+	validForms("hating#v") returns ["hate#v", "hat#v"]; problem is
+	that only the first matching rule of detachment (with a
+	corresponding entry in Wordnet) should be used.
+	validForms/forms/_forms/tokenDetach code needs to be restructured
+	to reflect this.
+
 2004-11-10  Beata Klebanov
 
 	* release 1.38
 	* QueryData.pm (tokenDetach): change match pattern from \w+ to .+;
 	old code wasn't matching words with hyphens! (e.g. go-karts)
+	* test.pl: added "go-karts" test
 
 2004-11-10  Jason Michelizzi
 

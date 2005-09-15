@@ -1,15 +1,15 @@
 # -*- perl -*-
 #
-# Package to interface with WordNet (wn) command line program
+# Package to interface with WordNet (wn) database
 
 # Run 'perldoc' on this file to produce documentation
 
-# Copyright 1999 Jason Rennie <jrennie@csail.mit.edu>
+# Copyright 1999-2005 Jason Rennie
 
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.38 2005/05/19 16:30:10 jrennie Exp $
+# $Id: QueryData.pm,v 1.39 2005/09/15 23:34:14 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.38 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.39 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -89,7 +89,11 @@ my %pos_num = ('noun'      => '1',
 # Mapping from WordNet symbols to short relation names
 my %relNameSym = ('ants' => {'!'=>1},
 		  'hype' => {'@'=>1},
+		  'inst' => {'@i'=>1},
+		  'hypes' => {'@'=>1,'@i'=>1},
 		  'hypo' => {'~'=>1},
+		  'hasi' => {'~i'=>1},
+		  'hypos' => {'~'=>1,'~i'=>1},
 		  'mmem' => {'%m'=>1},
 		  'msub' => {'%s'=>1},
 		  'mprt' => {'%p'=>1},
@@ -119,7 +123,9 @@ my %relNameSym = ('ants' => {'!'=>1},
 # Mapping from WordNet symbols to short relation names
 my %relSymName = ('!'  => 'ants',
 		  '@'  => 'hype',
+		  '@i' => 'inst',
 		  '~'  => 'hypo',
+		  '~i' => 'hasi',
 		  '%m' => 'mmem',
 		  '%s' => 'msub',
 		  '%p' => 'mprt',
@@ -141,35 +147,60 @@ my %relSymName = ('!'  => 'ants',
 		  ';r' => 'dmnr',
 		  ';c' => 'dmnc');
 
-# DEPRECATED!  DO NOT USE!  Use relSymName instead.
-my %relation_sym = ('!'  => 'ants',
-		    '@'  => 'hype',
-		    '~'  => 'hypo',
-		    '%m' => 'mmem',
-		    '%s' => 'msub',
-		    '%p' => 'mprt',
-		    '#m' => 'hmem',
-		    '#s' => 'hsub',
-		    '#p' => 'hprt',
-		    '='  => 'attr',
-		    '*'  => 'enta',
-		    '>'  => 'caus',
-		    '^'  => 'also',
-		    '$' => 'vgrp', # '$' Hack to make font-lock work in emacs
-		    '&'  => 'sim',
-		    '<'  => 'part',
-		    '\\' => 'pert');
+my %lexnames = ('00' => 'adj.all',
+		'01' => 'adj.pert',
+		'02' => 'adv.all',
+		'03' => 'noun.Tops',
+		'04' => 'noun.act',
+		'05' => 'noun.animal',
+		'06' => 'noun.artifact',
+		'07' => 'noun.attribute',
+		'08' => 'noun.body',
+		'09' => 'noun.cognition',
+		'10' => 'noun.communication',
+		'11' => 'noun.event',
+		'12' => 'noun.feeling',
+		'13' => 'noun.food',
+		'14' => 'noun.group',
+		'15' => 'noun.location',
+		'16' => 'noun.motive',
+		'17' => 'noun.object',
+		'18' => 'noun.person',
+		'19' => 'noun.phenomenon',
+		'20' => 'noun.plant',
+		'21' => 'noun.possession',
+		'22' => 'noun.process',
+		'23' => 'noun.quantity',
+		'24' => 'noun.relation',
+		'25' => 'noun.shape',
+		'26' => 'noun.state',
+		'27' => 'noun.substance',
+		'28' => 'noun.time',
+		'29' => 'verb.body',
+		'30' => 'verb.change',
+		'31' => 'verb.cognition',
+		'32' => 'verb.communication',
+		'33' => 'verb.competition',
+		'34' => 'verb.consumption',
+		'35' => 'verb.contact',
+		'36' => 'verb.creation',
+		'37' => 'verb.emotion',
+		'38' => 'verb.motion',
+		'39' => 'verb.perception',
+		'40' => 'verb.possession',
+		'41' => 'verb.social',
+		'42' => 'verb.stative',
+		'43' => 'verb.weather',
+		'44' => 'adj.ppl');
 
 # WordNet data file names
 my $lexnamesFile = "lexnames";
 my @excFile = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
-my @indexFileUnix = ("", "index.noun", "index.verb", "index.adj", "index.adv");
-my @dataFileUnix = ("", "data.noun", "data.verb", "data.adj", "data.adv");
-my @indexFilePC = ("", "noun.idx", "verb.idx", "adj.idx", "adv.idx");
-my @dataFilePC = ("", "noun.dat", "verb.dat", "adj.dat", "adv.dat");
+my @indexFile = ("", "index.noun", "index.verb", "index.adj", "index.adv");
+my @dataFile = ("", "data.noun", "data.verb", "data.adj", "data.adv");
 
-my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-2.0";
-my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\2.0";
+my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-2.1";
+my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\2.1";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
@@ -220,7 +251,6 @@ sub _initialize#
     
     # Load morphology exclusion mapping
     $self->loadExclusions ();
-    $self->loadLexnames();
     $self->loadIndex ();
     $self->openData ();
     warn "Done.\n" if ($self->{verbose});
@@ -284,29 +314,6 @@ sub loadExclusions#
     }
 }
 
-# Load mapping to non-standard canonical form of words (morphological
-# exceptions)
-sub loadLexnames#
-{
-    my $self = shift;
-    warn "(loadLexnames)" if ($self->{verbose});
-
-    my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$lexnamesFile : "$wnPrefixUnix/$lexnamesFile";
-    my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$lexnamesFile : "$wnPrefixPC\\$lexnamesFile";
-	
-    my $fh = new FileHandle($fileUnix);
-    $fh = new FileHandle($filePC) if (!defined($fh));
-    die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
-    
-    while (my $line = <$fh>)
-    {
-	my ($num, $name, $pos) = split(/\s+/, $line);
-	next if (!$num);
-	$self->{lexMap}->{$num} = $name;
-    }
-    undef $fh
-}
-
 sub loadIndex#
 {
     my $self = shift;
@@ -314,8 +321,8 @@ sub loadIndex#
 
     for (my $i=1; $i <= 4; $i++)
     {
-	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$indexFileUnix[$i] : "$wnPrefixUnix/$indexFileUnix[$i]";
-	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$indexFilePC[$i] : "$wnPrefixPC\\$indexFilePC[$i]";
+	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$indexFile[$i] : "$wnPrefixUnix/$indexFile[$i]";
+	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$indexFile[$i] : "$wnPrefixPC\\$indexFile[$i]";
 	
 	my $fh = new FileHandle($fileUnix);
 	
@@ -356,21 +363,14 @@ sub openData#
 
     for (my $i=1; $i <= 4; $i++)
     {
-	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$dataFileUnix[$i] : "$wnPrefixUnix/$dataFileUnix[$i]";
-	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$dataFilePC[$i] : "$wnPrefixPC\\$dataFilePC[$i]";
+	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$dataFile[$i] : "$wnPrefixUnix/$dataFile[$i]";
+	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$dataFile[$i] : "$wnPrefixPC\\$dataFile[$i]";
 	
 	my $fh = new FileHandle($fileUnix);
 	$fh = new FileHandle($filePC) if (!defined($fh));
 	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
 	$self->{data_fh}->[$i] = $fh;
     }
-}
-
-# DEPRECATED!  DO NOT USE!  Use removeDuplicates instead.
-sub remove_duplicates
-{
-    my ($self, $aref) = @_;
-    $self->removeDuplicates($aref);
 }
 
 # Remove duplicate values from an array, which must be passed as a
@@ -497,31 +497,6 @@ sub forms#
 }
 
 
-# DEPRECATED!  DO NOT USE!  Use "getSensePointers" instead.
-sub get_pointers
-{
-    my ($line, $pointer, $index_offset) = @_;
-    my $i;
-    
-    # $w_cnt is hexadecimal
-    my ($offset, $lex_file, $ss_type, $w_cnt, @stuff) = split (/\s+/, $line);
-    $w_cnt = hex ($w_cnt);
-    print STDERR "Offsets differ INDEX=$index_offset DATA=$offset\n"
-	if ($index_offset != $offset);
-    # Strip words
-    my (@word_info) = splice @stuff, 0, $w_cnt*2;
-    # Get pointers
-    my ($p_cnt) = splice (@stuff, 0, 1);
-    my (@pointer_info) = splice (@stuff, 0, $p_cnt*4);
-    for ($i=0; $i < $p_cnt; $i++)
-    {
-	# $st "source/target" is 2-part hexadecimal
-	my ($type, $offset, $pos, $st) = splice (@pointer_info, 0, 4);
-	push @{$pointer->{$relation_sym{$type}}}, "$offset\#$pos";
-    }
-    my $key;
-}
-
 # $line is line from data file; $ptr is a reference to a hash of
 # symbols; returns list of word#pos#sense strings
 sub getSensePointers#
@@ -577,61 +552,6 @@ sub getWordPointers#
 	    if (defined($ptr->{$sym}) and ($word[$src-1] =~ m/$lword/i));
     }
     return @rtn;
-}
-
-# DEPRECATED!  DO NOT USE!  Use "getAllSenses" instead.
-sub get_all_words
-{
-    my ($self, $index_offset, $pos) = @_;
-    my ($i, @rtn);
-    
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
-    seek $fh, $index_offset, 0;
-    $_ = <$fh>;
-    my ($offset, $w_cnt, @stuff);
-    ($offset, undef, undef, $w_cnt, @stuff) = split (/\s+/);
-    # $w_cnt is in hex, not decimal
-    $w_cnt = hex ($w_cnt);
-    print STDERR "Offsets differ INDEX=$index_offset DATA=$offset\n"
-	if ($index_offset != $offset);
-    # Grab words
-    my (@words) = splice @stuff, 0, $w_cnt*2;
-    # Get rid of lex file number junk
-    for ($i=1; $i <= $w_cnt; $i++) { splice @words, $i, 1; }
-    foreach my $word (@words)
-    {
-	$word = lower ($word);
-	# Eliminate syntactic marker (if any)
-        $word =~ s/\(.*\)$//; 
-	my @offset_array = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});
-	for ($i=0; $i < @offset_array; $i++)
-	{
-	    push @rtn, "$word\#$pos\#".($i+1) if ($offset_array[$i] == $index_offset);
-	    last if ($offset_array[$i] == $index_offset);
-	}
-    }
-    return @rtn;
-}
-
-# DEPRECATED!  DO NOT USE!  Use "getSense" instead.
-sub get_word
-{
-    my ($self, $index_offset, $pos) = @_;
-    
-    warn "(get_word) offset=$index_offset pos=$pos\n" if ($self->{verbose});
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
-    seek $fh, $index_offset, 0;
-    $_ = <$fh>;
-    my ($offset, $word);
-    ($offset, undef, undef, undef, $word) = split (/\s+/);
-    $word = lower ($word);
-    print STDERR "Offsets differ INDEX=$index_offset DATA=$offset\n"
-	if ($index_offset != $offset);
-    my @offset_array = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word});
-    for (my $i=0; $i < @offset_array; $i++)
-    {
-	return "$word\#$pos\#".($i+1) if ($offset_array[$i] == $index_offset);
-    }
 }
 
 # return list of word#pos#sense for $offset and $pos (synset)
@@ -739,7 +659,7 @@ sub lexname#
     seek $fh, $offset, 0;
     my $line = <$fh>;
     my (undef, $lexfn, undef) = split (/\s+/, $line, 3);
-    return $self->{lexMap}->{$lexfn};
+    return $lexnames{$lexfn};
 }
 
 # Return the frequency count for the type (3) query string
@@ -774,125 +694,6 @@ sub frequency
     }
     close CFH;
     return 0;
-}
-
-# DEPRECATED!  DO NOT USE!  Use "querySense" instead.
-sub query
-{
-    my $self = shift;
-    # The query string (word, pos and sense #)
-    my $string = shift;
-    # The relation about which to return information
-    # Only required for fully-qualified query (word, pos and sense #)
-    my $relation = shift;
-    my $i;
-    
-    # Ensure that input record separator is "\n"
-    my $old_separator = $/;
-    $/ = "\n";
-    
-    # get word, pos, and sense from second argument:
-    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
-    
-    $word = lower ($word) if ($word);
-    warn "(query) Illegal Part-of-speech: POS=$pos WORD=$word\n" 
-	if ($pos && !$pos_num{$pos});
-    
-    if ($sense)
-    {
-	print STDERR "(query) WORD=$word POS=$pos SENSE=$sense RELATION=$relation\n" if ($self->{verbose});
-	
-	if (!$relation)
-	{
-	    warn "Second argument is not a valid relation: $relation\n";
-	    return ();
-	}
-	# Map to abbreviation if relation name is in long or symbol form
-	$relation = $relSymName{$relation} if ($relSymName{$relation});
-	
-	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	# Each entry should be an array reference.  Each element in the
-	# array should be a pos-qualified offset (OFFSET#POS)
-	my %pointer;
-	# Sense number can be obtained from offset pointer ordering in index.*
-	
-	# Data file pointer
-	my $index_offset =
-	    (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word})[$sense-1];
-	seek $fh, $index_offset, 0;
-	# Get line corresponding to sense
-	$_ = <$fh>;
-	
-	if ($relation eq "glos")
-	{
-	    m/.*\|\s*(.*)$/;
-	    return $1;
-	}
-	
-	# Add synset relation
-	push @{$pointer{syns}}, "$index_offset\#$pos";
-	get_pointers ($_, \%pointer, $index_offset);
-	
-	# Create list of meronyms
-	push @{$pointer{mero}}, @{$pointer{mmem}} if ($pointer{mmem});
-	push @{$pointer{mero}}, @{$pointer{msub}} if ($pointer{msub});
-	push @{$pointer{mero}}, @{$pointer{mprt}} if ($pointer{mprt});
-	# Create list of holonyms
-	push @{$pointer{holo}}, @{$pointer{hmem}} if ($pointer{hmem});
-	push @{$pointer{holo}}, @{$pointer{hsub}} if ($pointer{hsub});
-	push @{$pointer{holo}}, @{$pointer{hprt}} if ($pointer{hprt});
-	
-	# If the relation is invalid, exit prematurely
-	if (!$pointer{$relation})
-	{
-	    warn "No such relation ($relation) for word \'$word\'\n"
-		if ($self->{verbose});
-	    return ();    
-	}
-	
-	# For syns, we must return all word/pos/sense tuples for this
-	# synset (not just the representative one)
-	return $self->get_all_words ($index_offset, $pos)
-	    if ($relation eq "syns");
-	
-	my @rtn;
-	foreach my $syn (@{$pointer{$relation}})
-	{
-	    my ($offset, $pos) = $syn =~ /^(\d+)\#([^\#]+)$/;
-	    push @rtn, $self->get_word ($offset, $pos);
-	}
-	return @rtn;
-    }
-    elsif ($pos)
-    {
-	print STDERR "(query) WORD=$word POS=$pos\n" if ($self->{verbose});
-	
-	my (@rtn, $i);
-	my @pointers = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$word}
-	if defined $self->{"index"}->[$pos_num{$pos}]->{$word};
-	my $sense_cnt = scalar @pointers;
-	for ($i=0; $i < @pointers; $i++) {
-	    push @rtn, "$string\#".($i+1);
-	}
-	return @rtn;
-    }
-    elsif ($word)
-    {
-	print STDERR "(query) WORD=$word\n" if ($self->{verbose});
-	my ($i, @rtn);
-	for ($i=1; $i <= 4; $i++)
-	{
-	    push @rtn, "$word\#".$pos_map{$i}
-	    if ($self->{"index"}->[$i]->{$word});
-	}
-	return @rtn;
-    }
-    else
-    {
-	warn "Illegal query string: $string\n";
-    }
-    # Return setting of input record separator
-    $/ = $old_separator;
 }
 
 sub querySense#
@@ -1014,13 +815,6 @@ sub queryWord#
     return @rtn;
 }
 
-# DEPRECATED!  DO NOT USE!  Use validForms instead.
-sub valid_forms
-{
-    my ($self, $string) = @_;
-    return $self->validForms($string);
-}
-
 # return list of entries in wordnet database (in word#pos form)
 sub validForms#
 {
@@ -1044,13 +838,6 @@ sub validForms#
     @valid_forms = grep $self->querySense ($_), @possible_forms;
     
     return @valid_forms;
-}
-
-# DEPRECATED!  DO NOT USE!  Use listAllWords instead.
-sub list_all_words
-{
-    my ($self, $pos) = @_;
-    return $self->listAllWords($pos);
 }
 
 # List all words in WordNet database of a particular part of speech
@@ -1137,7 +924,7 @@ QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  If WNSEARCHDIR is set, QueryData looks for WordNet data
 files there.  Otherwise, QueryData looks for WordNet data files in
 WNHOME/dict (WNHOME\dict on a PC).  If WNHOME is not set, it defaults
-to "/usr/local/WordNet-2.0" on Unix and "C:\Program Files\WordNet\2.0"
+to "/usr/local/WordNet-2.1" on Unix and "C:\Program Files\WordNet\2.1"
 on a PC.  Normally, all you have to do is to set the WNHOME variable
 to the location where you unpacked your WordNet distribution.  The
 database files are normally unpacked to the "dict" subdirectory.
@@ -1193,7 +980,11 @@ work with:
   glos - word definition
   syns - synset words
   hype - hypernyms
+  inst - instance of
+  hypes - hypernyms and "instance of"
   hypo - hyponyms
+  hasi - has instance
+  hypos - hyponums and "has instance"
   mmem - member meronyms
   msub - substance meronyms
   mprt - part meronyms
@@ -1216,7 +1007,9 @@ work with:
   dmtr - member of domain - region (nouns only)
 
 When called in this manner, querySense and queryWord will return a
-list of related words/senses.
+list of related words/senses.  Note that as of WordNet 2.1, many
+hypernyms have become "instance of" and many hyponyms have become "has
+instance."
 
 Note that querySense and queryWord use type (3) query strings in
 different ways.  A type (3) string passed to querySense specifies a
@@ -1225,11 +1018,13 @@ sense of a specific word.
 
 =head2 OTHER FUNCTIONS
 
-"validForms" accepts a type (1) or (2) query string.  It returns a list of
-all alternate forms (alternate spellings, conjugations,
-plural/singular forms, etc.) that WordNet recognizes.  The type (1) query
-returns alternates for all parts of speech (noun, verb, adjective,
-adverb).
+"validForms" accepts a type (1) or (2) query string.  It returns a
+list of all alternate forms (alternate spellings, conjugations,
+plural/singular forms, etc.) that WordNet recognizes.  The type (1)
+query returns alternates for all parts of speech (noun, verb,
+adjective, adverb).  WARNING: Only the first argument returned by
+validForms is certain to be valid (i.e. recognized by WordNet).
+Remaining arguments may not be valid.
 
 "listAllWords" accepts a part of speech and returns the full list of
 words in the WordNet database for that part of speech.
@@ -1262,7 +1057,7 @@ index.noun/noun.idx, etc.)
 
 =head1 COPYRIGHT
 
-Copyright 2000, 2001, 2002 Jason Rennie.  All rights reserved.
+Copyright 2000-2005 Jason Rennie.  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
@@ -1271,7 +1066,7 @@ it under the same terms as Perl itself.
 
 perl(1)
 
-http://www.cogsci.princeton.edu/~wn/
+http://wordnet.princeton.edu/
 
 http://people.csail.mit.edu/~jrennie/WordNet/
 
