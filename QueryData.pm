@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.39 2005/09/15 23:34:14 jrennie Exp $
+# $Id: QueryData.pm,v 1.40 2005/12/30 18:06:32 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.39 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.40 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -549,7 +549,7 @@ sub getWordPointers#
 	next if (!$st);
 	my ($src, $tgt) = ($st =~ m/([0-9a-f]{2})([0-9a-f]{2})/);
 	push @rtn, $self->getWord($offset, $pos, hex($tgt))
-	    if (defined($ptr->{$sym}) and ($word[$src-1] =~ m/$lword/i));
+	    if (defined($ptr->{$sym}) and ($word[hex($src)-1] =~ m/$lword/i));
     }
     return @rtn;
 }
@@ -1020,11 +1020,10 @@ sense of a specific word.
 
 "validForms" accepts a type (1) or (2) query string.  It returns a
 list of all alternate forms (alternate spellings, conjugations,
-plural/singular forms, etc.) that WordNet recognizes.  The type (1)
-query returns alternates for all parts of speech (noun, verb,
-adjective, adverb).  WARNING: Only the first argument returned by
-validForms is certain to be valid (i.e. recognized by WordNet).
-Remaining arguments may not be valid.
+plural/singular forms, etc.).  The type (1) query returns alternates
+for all parts of speech (noun, verb, adjective, adverb).  WARNING:
+Only the first argument returned by validForms is certain to be valid
+(i.e. recognized by WordNet).  Remaining arguments may not be valid.
 
 "listAllWords" accepts a part of speech and returns the full list of
 words in the WordNet database for that part of speech.

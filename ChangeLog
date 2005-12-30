@@ -1,7 +1,16 @@
+2005-12-30  Jason Rennie
+
+	* release 1.40
+	
+2005-12-30  Gregory Marton
+
+	* QueryData.pm (getWordPointers): $src is a hex, convert it to
+	decimal before trying to use it as an array index
+
 2005-09-15  Jason Rennie
 
 	* release 1.39
-	* test.pl: remove old (1.6, 1.7, 1.71) test
+	* test.pl: remove old (1.6, 1.7, 1.71) tests
 	* test.pl: update tests for 2.1
 	* QueryData.pm (@indexFilePC,@dataFilePC): delete; no longer used (2.1)
 	* QueryData.pm (@indexFileUnix,@dataFileUnix): remove Unix suffix
