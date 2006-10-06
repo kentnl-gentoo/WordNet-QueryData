@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.40 2005/12/30 18:06:32 jrennie Exp $
+# $Id: QueryData.pm,v 1.42 2006/10/06 01:09:05 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.40 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.42 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -633,18 +633,45 @@ sub getWord#
 }
 
 
+#sub offset#
+#{
+#    my ($self, $string) = @_;
+#
+#    my ($word, $pos, $sense)
+#	= $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
+#    warn "(offset) WORD=$word POS=$pos SENSE=$sense\n"
+#	if ($self->{verbose});
+#    die "(offset) Bad query string: $string"
+#	if (!defined($sense)
+#	    or !defined($pos)
+#	    or !defined($word)
+#	    or !defined($pos_num{$pos}));
+#    my $lword = lower ($word);
+#    return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
+#}
+
 # Return the WordNet data file offset for a fully qualified word sense
 sub offset#
 {
-    my ($self, $string) = @_;
+   my ($self, $string) = @_;
 
-    my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
-    warn "(offset) WORD=$word POS=$pos SENSE=$sense\n" if ($self->{verbose});
-    die "(offset) Bad query string: $string"
-	if (!defined($sense) or !defined($pos)
-	    or !defined($word) or !defined($pos_num{$pos}));
-    my $lword = lower ($word);
-    return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
+   my ($word, $pos, $sense)
+       = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/;
+   warn "(offset) WORD=$word POS=$pos SENSE=$sense\n"
+       if ($self->{verbose});
+   die "(offset) Bad query string: $string"
+       if (!defined($sense)
+	    or !defined($pos)
+	    or !defined($word)
+	    or !defined($pos_num{$pos}));
+   my $lword = lower($word);
+   if (exists( $self->{'index'})
+       && exists($pos_num{$pos})
+       && exists($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
+       return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
+   } else {
+       return;
+   }
 }
 
 # Return the lexname for the type (3) query string

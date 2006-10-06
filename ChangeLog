@@ -1,3 +1,11 @@
+2006-10-05  Jason Rennie
+
+	* release 1.42
+	
+2005-10-05  Hugh S. Myers
+
+	* QueryData.pm (offset): return undef if anything is undefined
+
 2005-12-30  Jason Rennie
 
 	* release 1.40

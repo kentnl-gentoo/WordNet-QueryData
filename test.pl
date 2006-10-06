@@ -2,7 +2,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.36 2005/12/30 18:06:46 jrennie Exp $
+# $Id: test.pl,v 1.37 2006/10/06 01:05:56 jrennie Exp $
 
 my $i = 1;
 BEGIN { 
@@ -25,6 +25,8 @@ my $wn = WordNet::QueryData->new;
 
 my $ver = $wn->version();
 print "Found WordNet database version $ver\n";
+
+#print join("\n",$wn->listAllWords('n'));
 
 ($wn->querySense("sunset#n#1", "hype"))[0] eq "hour#n#2"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -146,12 +148,12 @@ if ($ver eq "2.0")
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#1'
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    print scalar $wn->offset("0#n#1"), "\n";
+    #print scalar $wn->offset("0#n#1"), "\n";
     scalar $wn->offset("0#n#1") == 12967124
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     scalar $wn->listAllWords("noun") == 114648
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    print $wn->offset("child#n#1"), "\n";
+    #print $wn->offset("child#n#1"), "\n";
     $wn->offset("child#n#1") == 9284669
 	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
     my ($foo) = $wn->querySense ("cat#n#1", "glos");
