@@ -2,7 +2,7 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.37 2006/10/06 01:05:56 jrennie Exp $
+# $Id: test.pl,v 1.38 2006/10/15 23:19:17 jrennie Exp $
 
 my $i = 1;
 BEGIN { 

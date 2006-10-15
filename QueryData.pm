@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.42 2006/10/06 01:09:05 jrennie Exp $
+# $Id: QueryData.pm,v 1.43 2006/10/15 23:19:14 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,12 +42,16 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.42 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.43 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
 # Private Package Variables #
 #############################
+
+# Error variables
+$errorString = "";
+$errorVal = 0;
 
 # Mapping of possible part of speech to single letter used by wordnet
 my %pos_map = ('noun'      => 'n',
@@ -659,17 +663,24 @@ sub offset#
        = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/;
    warn "(offset) WORD=$word POS=$pos SENSE=$sense\n"
        if ($self->{verbose});
-   die "(offset) Bad query string: $string"
-       if (!defined($sense)
-	    or !defined($pos)
-	    or !defined($word)
-	    or !defined($pos_num{$pos}));
+   
+   if (!defined($sense)
+       or !defined($pos)
+       or !defined($word)
+       or !defined($pos_num{$pos})) {
+       $errorVal = 1;
+       $errorString = "One or more bogus arguments: offset($word,$pos,$sense)";
+       return;#die "(offset) Bad query string: $string";
+   }
+
    my $lword = lower($word);
-   if (exists( $self->{'index'})
-       && exists($pos_num{$pos})
+   if (exists($self->{'index'})
+       && exists($self->{"index"}->[$pos_num{$pos}]) {
        && exists($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
        return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
    } else {
+       $errorVal = 2;
+       $errorString = "Index not initialized properly or `$word' not found in index";
        return;
    }
 }

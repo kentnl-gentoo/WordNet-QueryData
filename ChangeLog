@@ -1,5 +1,15 @@
 2006-10-05  Jason Rennie
 
+	* release 1.43
+	
+2005-10-05  Jason Rennie
+
+	* QueryData.pm (offset): add error handling
+	* QueryData.pm ($errorString): new package variable
+	* QueryData.pm ($errorVal): new package variable
+
+2006-10-05  Jason Rennie
+
 	* release 1.42
 	
 2005-10-05  Hugh S. Myers
