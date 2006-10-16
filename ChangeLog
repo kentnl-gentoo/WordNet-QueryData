@@ -1,8 +1,17 @@
-2006-10-05  Jason Rennie
+2006-10-16  Jason Rennie
+
+	* release 1.44
+	
+2005-10-16  Jason Rennie
+
+	* QueryData.pm: add "use vars" for new variables
+	* QueryData.pm (offset): fix syntax error
+
+2006-10-15  Jason Rennie
 
 	* release 1.43
 	
-2005-10-05  Jason Rennie
+2005-10-15  Jason Rennie
 
 	* QueryData.pm (offset): add error handling
 	* QueryData.pm ($errorString): new package variable

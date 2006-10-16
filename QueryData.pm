@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.43 2006/10/15 23:19:14 jrennie Exp $
+# $Id: QueryData.pm,v 1.44 2006/10/16 14:49:27 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.43 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.44 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -50,6 +50,7 @@ BEGIN {
 #############################
 
 # Error variables
+use vars qw( $errorString $errorVal );
 $errorString = "";
 $errorVal = 0;
 
@@ -675,7 +676,7 @@ sub offset#
 
    my $lword = lower($word);
    if (exists($self->{'index'})
-       && exists($self->{"index"}->[$pos_num{$pos}]) {
+       && exists($self->{"index"}->[$pos_num{$pos}]) 
        && exists($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
        return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
    } else {
