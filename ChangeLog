@@ -1,18 +1,23 @@
 2006-10-16  Jason Rennie
 
-	* release 1.44
-	
-2005-10-16  Jason Rennie
+	* release 1.45
+	* QueryData.pm (_initialize): move errorString and errorVal
+	initialization here (so that variables are specific to each
+	instantiation of the module)
+	* QueryData.pm (getResetError): return error information, reset
+	error variables
+	* QueryData.pm (offset): update to use error variables via $self
+	* test.pm: test error handling for offset function
 
+2006-10-16  Jason Rennie
+
+	* release 1.44
 	* QueryData.pm: add "use vars" for new variables
 	* QueryData.pm (offset): fix syntax error
 
 2006-10-15  Jason Rennie
 
 	* release 1.43
-	
-2005-10-15  Jason Rennie
-
 	* QueryData.pm (offset): add error handling
 	* QueryData.pm ($errorString): new package variable
 	* QueryData.pm ($errorVal): new package variable

@@ -4,12 +4,12 @@
 
 # Run 'perldoc' on this file to produce documentation
 
-# Copyright 1999-2005 Jason Rennie
+# Copyright 1999-2006 Jason Rennie
 
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.44 2006/10/16 14:49:27 jrennie Exp $
+# $Id: QueryData.pm,v 1.45 2006/10/17 02:34:08 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.44 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.45 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -50,9 +50,8 @@ BEGIN {
 #############################
 
 # Error variables
-use vars qw( $errorString $errorVal );
-$errorString = "";
-$errorVal = 0;
+my $errorString = "";
+my $errorVal = 0;
 
 # Mapping of possible part of speech to single letter used by wordnet
 my %pos_map = ('noun'      => 'n',
@@ -221,6 +220,16 @@ sub version { my $self = shift; return $self->{version}; }
 # report WordNet data dir -- Sid (05/01/2003)
 sub dataPath { my $self = shift; return $self->{wnpath}; }
 
+sub getResetError#
+{
+    my $self = shift;
+    my $tmpString = $self->{errorString};
+    my $tmpVal = $self->{errorVal};
+    $self->{errorString} = "";
+    $self->{errorVal} = 0;
+    return ($tmpString, $tmpVal);
+}
+
 # convert to lower case, translate ' ' to '_' and eliminate any
 # syntactic marker
 sub lower#
@@ -258,6 +267,8 @@ sub _initialize#
     $self->loadExclusions ();
     $self->loadIndex ();
     $self->openData ();
+    $self->{errorString} = "";
+    $self->{errorVal} = "";
     warn "Done.\n" if ($self->{verbose});
     
     # Return setting of input record separator
@@ -669,8 +680,8 @@ sub offset#
        or !defined($pos)
        or !defined($word)
        or !defined($pos_num{$pos})) {
-       $errorVal = 1;
-       $errorString = "One or more bogus arguments: offset($word,$pos,$sense)";
+       $self->{errorVal} = 1;
+       $self->{errorString} = "One or more bogus arguments: offset($word,$pos,$sense)";
        return;#die "(offset) Bad query string: $string";
    }
 
@@ -680,8 +691,8 @@ sub offset#
        && exists($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
        return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
    } else {
-       $errorVal = 2;
-       $errorString = "Index not initialized properly or `$word' not found in index";
+       $self->{errorVal} = 2;
+       $self->{errorString} = "Index not initialized properly or `$word' not found in index";
        return;
    }
 }

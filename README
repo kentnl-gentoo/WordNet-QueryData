@@ -76,7 +76,7 @@ Make sure to add /foo/bar/baz to perl's @INC variable (e.g. -I/foo/bar/baz)
 COPYRIGHT
 ---------
 
-Copyright (C) 1999-2005 Jason Rennie.  All rights reserved.
+Copyright (C) 1999-2006 Jason Rennie.  All rights reserved.
 
 This module is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
