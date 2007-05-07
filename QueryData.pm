@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.45 2006/10/17 02:34:08 jrennie Exp $
+# $Id: QueryData.pm,v 1.46 2007/05/07 01:08:31 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.45 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.46 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -203,8 +203,8 @@ my @excFile = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
 my @indexFile = ("", "index.noun", "index.verb", "index.adj", "index.adv");
 my @dataFile = ("", "data.noun", "data.verb", "data.adj", "data.adv");
 
-my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-2.1";
-my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\2.1";
+my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-3.0";
+my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\3.0";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
 
@@ -215,7 +215,8 @@ END { } # module clean-up code here (global destructor)
 ###############
 
 # report WordNet version
-sub version { my $self = shift; return $self->{version}; }
+# Invalid way of identifying version as of WordNet 3.0
+#sub version { my $self = shift; return $self->{version}; }
 
 # report WordNet data dir -- Sid (05/01/2003)
 sub dataPath { my $self = shift; return $self->{wnpath}; }
@@ -974,7 +975,7 @@ QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  If WNSEARCHDIR is set, QueryData looks for WordNet data
 files there.  Otherwise, QueryData looks for WordNet data files in
 WNHOME/dict (WNHOME\dict on a PC).  If WNHOME is not set, it defaults
-to "/usr/local/WordNet-2.1" on Unix and "C:\Program Files\WordNet\2.1"
+to "/usr/local/WordNet-3.0" on Unix and "C:\Program Files\WordNet\3.0"
 on a PC.  Normally, all you have to do is to set the WNHOME variable
 to the location where you unpacked your WordNet distribution.  The
 database files are normally unpacked to the "dict" subdirectory.

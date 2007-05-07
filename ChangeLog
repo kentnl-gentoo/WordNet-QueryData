@@ -1,3 +1,11 @@
+2007-05-06  Jason Rennie
+
+	* release 1.46
+	* QueryData.pm (version): removed (Invalid as of WN 3.0)
+	* test.pm: remove tests for pre-3.0 WN; update tests for WN 3.0
+	* README, QueryData.pm: update documentation of WN version to 3.0
+	* Makefile.PL: update default WN paths
+
 2006-10-16  Jason Rennie
 
 	* release 1.45
@@ -26,7 +34,7 @@
 
 	* release 1.42
 	
-2005-10-05  Hugh S. Myers
+2006-10-05  Hugh S. Myers
 
 	* QueryData.pm (offset): return undef if anything is undefined
 

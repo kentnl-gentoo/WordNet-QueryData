@@ -14,7 +14,7 @@ PREREQUISITES
 -------------
 
 - Perl5
-- WordNet Database Package version 2.1
+- WordNet Database Package version 3.0
 
 DOCUMENTATION
 -------------
@@ -31,7 +31,7 @@ WINDOWS INSTALLATION
 
 This assumes that perl was installed to the default location (C:\perl).
 
-  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\2.1
+  0) Make sure that you have installed WordNet to C:\Program Files\WordNet\3.0
   1) Unpack the WordNet QueryData distribution
   2) Create the directory C:\perl\site\lib\WordNet
   3) Copy QueryData.pm to C:\perl\site\lib\WordNet

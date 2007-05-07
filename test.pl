@@ -2,12 +2,11 @@
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
-# $Id: test.pl,v 1.39 2006/10/17 02:37:42 jrennie Exp $
+# $Id: test.pl,v 1.40 2007/05/07 01:08:31 jrennie Exp $
 
 my $i = 1;
 BEGIN { 
     $| = 1;
-    print "v2.0: 1..54\nv2.1: 1..54\n";
 }
 END { print "not ok 1\n" unless $loaded; }
 use WordNet::QueryData;
@@ -23,8 +22,8 @@ print "Loading index files.  This may take a while...\n";
 my $wn = WordNet::QueryData->new;
 #my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.1/dict");
 
-my $ver = $wn->version();
-print "Found WordNet database version $ver\n";
+#my $ver = $wn->version();
+#print "Found WordNet database version $ver\n";
 
 #print join("\n",$wn->listAllWords('n'));
 
@@ -42,7 +41,7 @@ scalar $wn->querySense ("rabbit") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->querySense ("rabbit#n") == 3
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-scalar $wn->querySense ("rabbit#n#1", "hypo") == 6
+scalar $wn->querySense ("rabbit#n#1", "hypo") == 7
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 # check that underscore is added, syntactic marker is removed
@@ -137,7 +136,7 @@ $wn->lexname('idiom#n#2') eq 'noun.communication'
 # frequency() tests
 $wn->frequency('thirteenth#a#1') == 1
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-$wn->frequency('night#n#2') == 217
+$wn->frequency('night#n#1') == 163
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 $wn->frequency('cnn#n#1') == 0
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
@@ -147,34 +146,15 @@ my @foo = $wn->getResetError();
 $foo[1] == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-if ($ver eq "2.0")
-{
-    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personify#v#3'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    #print scalar $wn->offset("0#n#1"), "\n";
-    scalar $wn->offset("0#n#1") == 12967124
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->listAllWords("noun") == 114648
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    #print $wn->offset("child#n#1"), "\n";
-    $wn->offset("child#n#1") == 9284669
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    my ($foo) = $wn->querySense ("cat#n#1", "glos");
-    ($foo eq "feline mammal usually having thick soft fur and being unable to roar; domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-} elsif ($ver eq "2.1")
-{
-    ($wn->queryWord('person#n#1', 'deri'))[0] eq 'personhood#n#1'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#2'
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->offset("0#n#1") == 13561555
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    scalar $wn->listAllWords("noun") == 117097
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    $wn->offset("child#n#1") == 9771320
-	? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-    my ($foo) = $wn->querySense ("cat#n#1", "glos");
-   ($foo eq "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-}
+($wn->queryWord('person#n#1', 'deri'))[0] eq 'personhood#n#1'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#2'
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->offset("0#n#1") == 13742358
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+scalar $wn->listAllWords("noun") == 117798
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+$wn->offset("child#n#1") == 9917593
+    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+my ($foo) = $wn->querySense ("cat#n#1", "glos");
+($foo eq "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
