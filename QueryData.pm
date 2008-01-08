@@ -9,7 +9,7 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.46 2007/05/07 01:08:31 jrennie Exp $
+# $Id: QueryData.pm,v 1.47 2008/01/08 17:34:24 jrennie Exp $
 
 ####### manual page & loadIndex ##########
 
@@ -42,7 +42,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.46 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = do { my @r=(q$Revision: 1.47 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
 }
 
 #############################
@@ -983,7 +983,7 @@ database files are normally unpacked to the "dict" subdirectory.
 You can also pass the location of the database files directly to
 QueryData.  To do this, pass the location to "new":
 
-  my $wn = new WordNet::QueryData->new("/usr/local/wordnet/dict")
+  my $wn = WordNet::QueryData->new("/usr/local/wordnet/dict");
 
 When calling "new" in this fashion, you can give it a second verbosity
 argument; a true value will have QueryData print debugging
