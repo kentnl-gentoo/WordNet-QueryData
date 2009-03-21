@@ -1,3 +1,29 @@
+2009-03-20  Jason Rennie
+
+	* release 1.48
+	* fix handling of WNSEARCHDIR
+
+2009-03-14  Danny Brian
+
+	* added the ability for new() to take a named param list
+	* added a new() param "noload" to not preload index files, but to
+	instead use Search::Dict lookups thereafter
+	* added _getIndexFH() and _getDataFH() to consolidate opening and
+	caching of filehandles
+	* added _dataLookup() to consolidate reads from data files
+	* added _indexLookup() to consolidate reads from index files
+	* added _indexOffsetLookup() to consolidate offset reads from index
+	files
+	* added _parseIndexLine() to consolidate the parsing of index file lines
+	* moved path data to new(), so that everything reads off of $self->{dir}
+	* removed the cntlinst path special-casing
+	* all file opens are deferred until necessary; for noload this means as
+	long as possible, for caching it means during the constructor (see
+	_get*FH() functions)
+	* documented "noload" option
+	* loop tests again for "noload"
+	* cleaned up formatting
+
 2008-01-08  Jason Rennie
 
 	* release 1.47

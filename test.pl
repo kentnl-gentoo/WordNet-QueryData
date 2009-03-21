@@ -17,10 +17,20 @@ print "ok ", $i++, "\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-print "Loading index files.  This may take a while...\n";
-# Uses $WNHOME environment variable
-my $wn = WordNet::QueryData->new;
-#my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.1/dict");
+# run tests once for index/excl/data loading, and again without
+for my $noload (1,0) {
+
+my $wn;
+if ($noload == 0) {
+    print "Loading index files.  This may take a while...\n";
+    # Uses $WNHOME environment variable
+    $wn = WordNet::QueryData->new( verbose => 0 );
+    #my $wn = WordNet::QueryData->new("/scratch/jrennie/WordNet-2.1/dict");
+}
+else
+{
+    $wn = WordNet::QueryData->new( noload => 1 );
+}
 
 #my $ver = $wn->version();
 #print "Found WordNet database version $ver\n";
@@ -39,6 +49,7 @@ scalar $wn->forms ("fastest#3") == 3
 
 scalar $wn->querySense ("rabbit") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
 scalar $wn->querySense ("rabbit#n") == 3
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->querySense ("rabbit#n#1", "hypo") == 7
@@ -80,7 +91,8 @@ scalar $wn->querySense ("child#n#1", "syns") == 12
 ($wn->querySense("World_War_II#n#1", "mero"))[1] eq "Battle_of_Britain#n#1"
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 # test tagSenseCnt function
-($wn->tagSenseCnt("academy#n") == 2)
+
+$wn->tagSenseCnt("academy#n") == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 # test "ies" -> "y" rule of detachment
@@ -152,9 +164,12 @@ $foo[1] == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 scalar $wn->offset("0#n#1") == 13742358
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
 scalar $wn->listAllWords("noun") == 117798
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 $wn->offset("child#n#1") == 9917593
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 my ($foo) = $wn->querySense ("cat#n#1", "glos");
 ($foo eq "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
+
+}

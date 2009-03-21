@@ -9,8 +9,6 @@
 # This module is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
 
-# $Id: QueryData.pm,v 1.47 2008/01/08 17:34:24 jrennie Exp $
-
 ####### manual page & loadIndex ##########
 
 # STANDARDS
@@ -218,8 +216,6 @@ END { } # module clean-up code here (global destructor)
 # Invalid way of identifying version as of WordNet 3.0
 #sub version { my $self = shift; return $self->{version}; }
 
-# report WordNet data dir -- Sid (05/01/2003)
-sub dataPath { my $self = shift; return $self->{wnpath}; }
 
 sub getResetError#
 {
@@ -264,10 +260,13 @@ sub _initialize#
     my $old_separator = $/;
     $/ = "\n";
     
-    # Load morphology exclusion mapping
-    $self->loadExclusions ();
+    # Load morphology exclusion mapping, indexes, open data file handles
+    unless ($self->{noload}) {
+        $self->loadExclusions ();
+    }
     $self->loadIndex ();
     $self->openData ();
+
     $self->{errorString} = "";
     $self->{errorVal} = "";
     warn "Done.\n" if ($self->{verbose});
@@ -280,14 +279,37 @@ sub new#
 {
     # First argument is class
     my $class = shift;
-    # Second is location of WordNet dictionary; Third is verbosity
     
     my $self = {};
     bless $self, $class;
-    $self->{dir} = shift if (defined(@_ > 0));
-    $self->{verbose} = @_ ? shift : 0;
+
+    # try to preserve old calling syntax, at least for dir
+    if (scalar @_ == 1) {
+        $self->{dir} = shift;
+    }
+    # but allow an extensible params syntax
+    else
+    {
+        my %params = @_;
+        $self->{dir}     = $params{dir} if $params{dir};
+        $self->{verbose} = $params{verbose} if $params{verbose};
+        $self->{noload}  = $params{noload} if $params{noload};
+    }
+        
     warn "Dir = ", $self->{dir}, "\n" if ($self->{verbose});
     warn "Verbose = ", $self->{verbose}, "\n" if ($self->{verbose});
+    warn "Noload = ", $self->{noload}, "\n" if ($self->{verbose});
+    
+    ## set $self->{dir} here and avoid the confusion later on, and the {wnpath} stuff.
+    ## also fix up path endings to have trailing slashes if they didn't come that way.
+    if (-e $wnPrefixUnix) {
+        $self->{dir} ||= $wnPrefixUnix;
+        $self->{dir} .= "/" if $self->{dir} !~ m|/$|;
+    } elsif (-e $wnPrefixPC) {
+        $self->{dir} ||= $wnPrefixPC;
+        $self->{dir} .= "\\" if $self->{dir} !~ m|\\$|;
+    }
+    
     $self->_initialize ();
     return $self;
 }
@@ -296,9 +318,9 @@ sub new#
 sub DESTROY#
 {
     my $self = shift;
-    
+
     for (my $i=1; $i <= 4; $i++) {
-	undef $self->{data_fh}->[$i];
+        undef $self->{data_fh}->[$i];
     }
 }
 
@@ -311,23 +333,17 @@ sub loadExclusions#
 
     for (my $i=1; $i <= 4; $i++)
     {
-	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$excFile[$i] : "$wnPrefixUnix/$excFile[$i]";
-	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$excFile[$i] : "$wnPrefixPC\\$excFile[$i]";
-	
-	my $fh = new FileHandle($fileUnix);
-	$fh = new FileHandle($filePC) if (!defined($fh));
-	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
-	
-	while (my $line = <$fh>)
-	{
-	    my ($exc, @word) = split(/\s+/, $line);
-	    next if (!@word);
-	    if (!defined($self->{morph_exc}->[$i]->{$exc})) {
-		@{$self->{morph_exc}->[$i]->{$exc}} = @word;
-	    } else {
-		push @{$self->{morph_exc}->[$i]->{$exc}}, @word;
-	    }
-	}
+        my $file = $self->{dir} . "$excFile[$i]";
+        my $fh = new FileHandle($file);
+        die "Not able to open $file: $!" if (!defined($fh));
+        
+        while (my $line = <$fh>)
+        {
+            my ($exc, @word) = split(/\s+/, $line);
+            next if (!@word);
+            $self->{morph_exc}->[$i]->{$exc} ||= [];
+            push @{$self->{morph_exc}->[$i]->{$exc}}, @word;
+        }
     }
 }
 
@@ -338,38 +354,28 @@ sub loadIndex#
 
     for (my $i=1; $i <= 4; $i++)
     {
-	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$indexFile[$i] : "$wnPrefixUnix/$indexFile[$i]";
-	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$indexFile[$i] : "$wnPrefixPC\\$indexFile[$i]";
-	
-	my $fh = new FileHandle($fileUnix);
-	
-	# Added Code -- WordNet data path being used -- Sid (05/01/2003)
-	if (defined $fh) { $self->{wnpath} = defined($self->{dir}) ? $self->{dir} : $wnPrefixUnix; }
-	else { $self->{wnpath} = defined($self->{dir}) ? $self->{dir} : $wnPrefixPC; }
-	
-	$fh = new FileHandle($filePC) if (!defined($fh));
-	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
-	
-	my $line;
-	while ($line = <$fh>) {
-	    $self->{version} = $1 if ($line =~ m/WordNet (\S+)/);
-	    last if ($line =~ m/^\S/);
-	}
-	while (1) {
-	    my ($lemma, $pos, $sense_cnt, $p_cnt);
-	    ($lemma, $pos, $sense_cnt, $p_cnt, $line) = split(/\s+/, $line, 5);
-	    for (my $i=0; $i < $p_cnt; ++$i) {
-		(undef, $line) = split(/\s+/, $line, 2);
-	    }
-	    my (undef, $tagsense_cnt, @offset) = split(/\s+/, $line);
-	    $self->{"index"}->[$pos_num{$pos}]->{$lemma} = pack "i*", @offset;
-	    $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lemma} = $tagsense_cnt;
-	    $line = <$fh>;
-	    last if (!$line);
-	}
+        my $file = $self->{dir} . "$indexFile[$i]";
+        ${$self->{indexFilePaths}}[$i] = $file;
+        
+        if (!$self->{noload})
+        {
+            my $fh = $self->_getIndexFH($pos_num{$i});            
+            my $line;
+            while ($line = <$fh>) {
+                $self->{version} = $1 if ($line =~ m/WordNet (\S+)/);
+                last if ($line =~ m/^\S/);
+            }
+            while (1) {
+                my ($lemma, $pos, $offsets, $sense_cnt, $p_cnt) = $self->_parseIndexLine($line);
+                $self->{"index"}->[$pos_num{$pos}]->{$lemma} = $offsets;
+                $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lemma} = $sense_cnt;
+                $line = <$fh>;
+                last if (!$line);
+            }
+            warn "\n*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.6");
+            warn "\n*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.7");
+        }
     }
-    warn "\n*** Version 1.6 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.6");
-    warn "\n*** Version 1.7 of the WordNet database is no longer being supported as\n*** of QueryData 1.27.  It may still work, but consider yourself warned.\n" if ($self->{version} eq "1.7");
 }
 
 # Open data files and return file handles
@@ -380,13 +386,9 @@ sub openData#
 
     for (my $i=1; $i <= 4; $i++)
     {
-	my $fileUnix = defined($self->{dir}) ? $self->{dir}."/".$dataFile[$i] : "$wnPrefixUnix/$dataFile[$i]";
-	my $filePC = defined($self->{dir}) ? $self->{dir}."\\".$dataFile[$i] : "$wnPrefixPC\\$dataFile[$i]";
-	
-	my $fh = new FileHandle($fileUnix);
-	$fh = new FileHandle($filePC) if (!defined($fh));
-	die "Not able to open $fileUnix or $filePC: $!" if (!defined($fh));
-	$self->{data_fh}->[$i] = $fh;
+        my $file = $self->{dir} . "$dataFile[$i]";
+        ${$self->{dataFilePaths}}[$i] = $file;
+        $self->_getDataFH($i);
     }
 }
 
@@ -464,7 +466,17 @@ sub _forms#
     my $lword = lower($word);
     warn "(_forms) WORD=$word POS=$pos\n" if ($self->{verbose});
     # if word is in morph exclusion table, return that entry
-    return ($word, @{$self->{morph_exc}->[$pos]->{$lword}}) if (defined ($self->{morph_exc}->[$pos]->{$lword}));	
+    if ($self->{noload}) {
+        # for noload, only load exclusions when needed; we do cache these
+        # though because the list is short (40k) and used on repeated recursive
+        # calls.
+        if (! exists $self->{morph_exc}) {
+            $self->loadExclusions();
+        }
+    }
+    if (defined ($self->{morph_exc}->[$pos]->{$lword})) {
+        return ($word, @{$self->{morph_exc}->[$pos]->{$lword}});
+    }
 
     my @token = split (/[ _]/, $word);
     # If there is only one token, process via rules of detachment
@@ -472,8 +484,9 @@ sub _forms#
     # Otherwise, process each token individually, then string together colloc's
     my @forms;
     for (my $i=0; $i < @token; $i++) {
-	push @{$forms[$i]}, _forms ($self, $token[$i], $pos);
+	   push @{$forms[$i]}, _forms ($self, $token[$i], $pos);
     }
+    
     # Generate all possible token sequences (collocations)
     my @rtn;
     my @index;
@@ -508,7 +521,7 @@ sub forms#
     die "(forms) Bad part-of-speech: pos=$pos" if (!defined($pos) or !defined($pos_num{$pos}));
     my @rtn = _forms ($self, $word, $pos_num{$pos});
     for (my $i=0; $i < @rtn; ++$i) {
-	$rtn[$i] .= "\#$pos";
+	   $rtn[$i] .= "\#$pos";
     }
     return @rtn;
 }
@@ -527,7 +540,7 @@ sub getSensePointers#
     (undef, undef, undef, $w_cnt, $line) = split (/\s+/, $line, 5);
     $w_cnt = hex ($w_cnt);
     for (my $i=0; $i < $w_cnt; ++$i) {
-	(undef, undef, $line) = split(/\s+/, $line, 3);
+	   (undef, undef, $line) = split(/\s+/, $line, 3);
     }
     my $p_cnt;
     ($p_cnt, $line) = split(/\s+/, $line, 2);
@@ -555,18 +568,18 @@ sub getWordPointers#
     $w_cnt = hex ($w_cnt);
     my @word;
     for (my $i=0; $i < $w_cnt; ++$i) {
-	($word[$i], undef, $line) = split(/\s+/, $line, 3);
+	   ($word[$i], undef, $line) = split(/\s+/, $line, 3);
     }
     my $p_cnt;
     ($p_cnt, $line) = split(/\s+/, $line, 2);
     for (my $i=0; $i < $p_cnt; ++$i) {
-	my ($sym, $offset, $pos, $st);
-	# $st "source/target" is 2-part hexadecimal
-	($sym, $offset, $pos, $st, $line) = split(/\s+/, $line, 5);
-	next if (!$st);
-	my ($src, $tgt) = ($st =~ m/([0-9a-f]{2})([0-9a-f]{2})/);
-	push @rtn, $self->getWord($offset, $pos, hex($tgt))
-	    if (defined($ptr->{$sym}) and ($word[hex($src)-1] =~ m/$lword/i));
+        my ($sym, $offset, $pos, $st);
+        # $st "source/target" is 2-part hexadecimal
+        ($sym, $offset, $pos, $st, $line) = split(/\s+/, $line, 5);
+        next if (!$st);
+        my ($src, $tgt) = ($st =~ m/([0-9a-f]{2})([0-9a-f]{2})/);
+        push @rtn, $self->getWord($offset, $pos, hex($tgt))
+            if (defined($ptr->{$sym}) and ($word[hex($src)-1] =~ m/$lword/i));
     }
     return @rtn;
 }
@@ -578,26 +591,24 @@ sub getAllSenses#
     warn "(getAllSenses) offset=$offset pos=$pos\n" if ($self->{verbose});
 
     my @rtn;
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
-    seek $fh, $offset, 0;
-    my $line = <$fh>;
+    my $line = $self->_dataLookup($pos, $offset);
     my $w_cnt;
     (undef, undef, undef, $w_cnt, $line) = split(/\s+/, $line, 5);
     $w_cnt = hex ($w_cnt);
     my @words;
     for (my $i=0; $i < $w_cnt; ++$i) {
-	($words[$i], undef, $line) = split(/\s+/, $line, 3);
+	   ($words[$i], undef, $line) = split(/\s+/, $line, 3);
     }
     foreach my $word (@words) {
-	$word = delMarker($word);
-	my $lword = lower ($word);
-	my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
-	for (my $i=0; $i < @offArr; $i++) {
-	    if ($offArr[$i] == $offset) {
-		push @rtn, "$word\#$pos\#".($i+1);
-		last;
-	    }
-	}
+        $word = delMarker($word);
+        my $lword = lower ($word);
+        my @offArr = $self->_indexOffsetLookup($lword, $pos);
+        for (my $i=0; $i < @offArr; $i++) {
+            if ($offArr[$i] == $offset) {
+                push @rtn, "$word\#$pos\#".($i+1);
+                last;
+            }
+        }
     }
     return @rtn;
 }
@@ -608,18 +619,98 @@ sub getSense#
     my ($self, $offset, $pos) = @_;
     warn "(getSense) offset=$offset pos=$pos\n" if ($self->{verbose});
     
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
-    seek $fh, $offset, 0;
-    my $line = <$fh>;
+    my $line = $self->_dataLookup($pos, $offset);
+    
     my ($lexfn,$word);
     (undef, $lexfn, undef, undef, $word, $line) = split (/\s+/, $line, 6);
     $word = delMarker($word);
     my $lword = lower($word);
-    my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
+    
+    my @offArr = $self->_indexOffsetLookup($word, $pos);
     for (my $i=0; $i < @offArr; $i++) {
-	return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
+	   return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
     }
     die "(getSense) Internal error: offset=$offset pos=$pos";
+}
+
+sub _getIndexFH {
+    my $self = shift;
+    my $pos = shift;
+    my $fh = $self->{index_fh}->[$pos_num{$pos}] ||= 
+                   FileHandle->new ( ${$self->{indexFilePaths}}[$pos_num{$pos}] );
+    unless ($fh) {
+        die "Couldn't open index file: " . ${$self->{indexFilePaths}}[$pos_num{$pos}];
+    }
+    return $fh;
+}
+
+sub _getDataFH {
+    my $self = shift;
+    my $pos = shift;
+    my $fh = $self->{data_fh}->[$pos_num{$pos}] ||= 
+                   FileHandle->new ( ${$self->{dataFilePaths}}[$pos_num{$pos}] );
+    unless ($fh) {
+        die "Couldn't open data file: " . ${$self->{indexFilePaths}}[$pos_num{$pos}];
+    }
+    return $fh;
+}
+
+## returns the offset(s) given word, pos, and sense
+sub _indexOffsetLookup {
+    my $self = shift;
+    my ($word, $pos, $sense) = @_;
+    my $lword = lower ($word);
+    # print STDERR "(_indexOffsetLookup) $word $pos $sense\n";
+    if ($sense) {
+        my $offset;
+        if ($self->{noload}) {
+            my $line = $self->_indexLookup($pos, $lword);
+            my ($lemma, $pos, $offsets, $sense_cnt, $p_cnt) = $self->_parseIndexLine($line);
+            $offset = $$offsets[$sense - 1] if ($lemma eq $lword); ## remember that look always succeeds
+        }
+        else
+        {
+            $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1]
+                if (exists $self->{"index"}->[$pos_num{$pos}]->{$lword});
+        }
+        return $offset;
+    }
+    else
+    {
+        my @offsets = ();
+        if ($self->{noload}) {
+            my $line = $self->_indexLookup($pos, $lword);
+            my ($lemma, $pos, $offsets, $sense_cnt, $p_cnt) = $self->_parseIndexLine($line);
+            @offsets = @$offsets if ($lemma eq $lword);
+        }
+        else
+        {
+            if (defined($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
+                @offsets = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
+            }
+        }
+        return @offsets;
+    }
+}
+
+## returns line from index file
+sub _indexLookup {
+    my $self = shift;
+    my ($pos, $word) = @_;
+    my $fh = $self->_getIndexFH($pos);
+    look($fh, $word, 0);
+    my $line  = <$fh>;
+    return $line;
+}
+
+## returns line from data file
+sub _dataLookup {
+    my $self = shift;
+    my ($pos, $offset) = @_;
+    my $fh = $self->_getDataFH($pos);
+    seek($fh, $offset, 0);
+    my $line  = <$fh>;
+    return $line;
 }
 
 # returns word#pos#sense for given offset, pos and number
@@ -628,7 +719,7 @@ sub getWord#
     my ($self, $offset, $pos, $num) = @_;
     warn "(getWord) offset=$offset pos=$pos num=$num" if ($self->{verbose});
     
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
+    my $fh = $self->_getDataFH($pos);
     seek $fh, $offset, 0;
     my $line = <$fh>;
     my $w_cnt;
@@ -636,15 +727,15 @@ sub getWord#
     $w_cnt = hex ($w_cnt);
     my $word;
     for (my $i=0; $i < $w_cnt; ++$i) {
-	($word, undef, $line) = split(/\s+/, $line, 3);
-	$word = delMarker($word);
-	# (mich0212) return "$word\#$pos" if ($i+1 == $num);
-	last if ($i+1 == $num);
+	   ($word, undef, $line) = split(/\s+/, $line, 3);
+	   $word = delMarker($word);
+	   # (mich0212) return "$word\#$pos" if ($i+1 == $num);
+	   last if ($i+1 == $num);
     }
     my $lword = lower($word);
-    my @offArr = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword});
+    my @offArr = $self->_indexOffsetLookup($lword, $pos);;
     for (my $i=0; $i < @offArr; $i++) {
-	return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
+	   return "$word\#$pos\#".($i+1) if ($offArr[$i] == $offset);
     }
     die "(getWord) Bad number: offset=$offset pos=$pos num=$num";
 }
@@ -687,15 +778,13 @@ sub offset#
    }
 
    my $lword = lower($word);
-   if (exists($self->{'index'})
-       && exists($self->{"index"}->[$pos_num{$pos}]) 
-       && exists($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
-       return (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
-   } else {
-       $self->{errorVal} = 2;
-       $self->{errorString} = "Index not initialized properly or `$word' not found in index";
-       return;
-   }
+   my $res = $self->_indexOffsetLookup($lword, $pos, $sense);
+
+   return $res if $res;
+
+   $self->{errorVal} = 2;
+   $self->{errorString} = "Index not initialized properly or `$word' not found in index";
+   return;
 }
 
 # Return the lexname for the type (3) query string
@@ -706,9 +795,7 @@ sub lexname#
     my $offset = $self->offset($string);
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(lexname) word=$word pos=$pos sense=$sense offset=$offset\n" if ($self->{verbose});
-    my $fh = $self->{data_fh}->[$pos_num{$pos}];
-    seek $fh, $offset, 0;
-    my $line = <$fh>;
+    my $line = $self->_dataLookup($pos, $offset);
     my (undef, $lexfn, undef) = split (/\s+/, $line, 3);
     return $lexnames{$lexfn};
 }
@@ -721,27 +808,26 @@ sub frequency
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)\#([^\#]+)\#([^\#]+)$/;
 
     unless (defined $word and defined $pos and defined $sense) {
-	croak "(frequency) Query string is not a valid type (3) string";
+	   croak "(frequency) Query string is not a valid type (3) string";
     }
 
     warn "(frequency) word=$word pos=$pos sense=$sense\n" if $self->{verbose};
 
-    my $dp = $self->dataPath;
-    my $cntfile = File::Spec->catfile ($dp, 'cntlist.rev');
+    my $cntfile = File::Spec->catfile ( $self->{dir} . 'cntlist.rev');
     open CFH, "<$cntfile" or die "Cannot open $cntfile: $!";
     
     # look() seek()s to the right position in the file
     my $position = Search::Dict::look (*CFH, "$word\%", 0, 0);
     while (<CFH>) {
-	if (/^$word\%(\d+):[^ ]+ (\d+) (\d+)/) {
-	    next unless $pos_map{$1} eq $pos;
-	    next unless $2 eq $sense;
-	    close CFH;
-	    return $3;
-	}
-	else {
-	    last;
-	}
+        if (/^$word\%(\d+):[^ ]+ (\d+) (\d+)/) {
+            next unless $pos_map{$1} eq $pos;
+            next unless $2 eq $sense;
+            close CFH;
+            return $3;
+        }
+        else {
+            last;
+        }
     }
     close CFH;
     return 0;
@@ -752,56 +838,63 @@ sub querySense#
     my $self = shift;
     my $string = shift;
     
+    warn "(querySense) STRING=$string" if $self->{verbose};
+    
     # Ensure that input record separator is "\n"
     my $old_separator = $/;
     $/ = "\n";
     my @rtn;
-    
+        
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     die "(querySense) Bad query string: $string" if (!defined($word));
     my $lword = lower ($word);
-    die "(querySense) Bad part-of-speech: $string"
-	if (defined($pos) && !$pos_num{$pos});
+    die "(querySense) Bad part-of-speech: $string" if (defined($pos) && !$pos_num{$pos});
     
     if (defined($sense)) {
-	my $rel = shift;
-	warn "(querySense) WORD=$word POS=$pos SENSE=$sense RELATION=$rel\n" if ($self->{verbose});
-	die "(querySense) Relation required: $string" if (!defined($rel));
-	die "(querySense) Bad relation: $rel" 
-	    if (!defined($relNameSym{$rel}) and !defined($relSymName{$rel})
-		 and ($rel ne "glos") and ($rel ne "syns"));
-	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
-	
-	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	my $offset = (unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
-	seek $fh, $offset, 0;
-	my $line = <$fh>;
-	
-	if ($rel eq "glos") {
-	    $line =~ m/.*\|\s*(.*)$/;
-	    $rtn[0] = $1;
-	} elsif ($rel eq "syns") {
-	    @rtn = $self->getAllSenses ($offset, $pos);
-	} else {
-	    @rtn = $self->getSensePointers($line, $relNameSym{$rel});
-	}
-    } elsif (defined($pos)) {
-	warn "(querySense) WORD=$word POS=$pos\n" if ($self->{verbose});
-	if (defined($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
-	    my @offset = unpack "i*", $self->{"index"}->[$pos_num{$pos}]->{$lword};
-	    $word = underscore(delMarker($word));
-	    for (my $i=0; $i < @offset; $i++) {
-		push @rtn, "$word\#$pos\#".($i+1);
-	    }
-	}
-    } elsif (defined($word)) {
-	print STDERR "(querySense) WORD=$word\n" if ($self->{verbose});
-	$word = underscore(delMarker($word));
-	for (my $i=1; $i <= 4; $i++) {
-	    push @rtn, "$word\#".$pos_map{$i}
-	    if ($self->{"index"}->[$i]->{$lword});
-	}
+        my $rel = shift;
+        warn "(querySense) WORD=$word POS=$pos SENSE=$sense RELATION=$rel\n" if ($self->{verbose});
+        die "(querySense) Relation required: $string" if (!defined($rel));
+        die "(querySense) Bad relation: $rel" 
+            if (!defined($relNameSym{$rel}) and !defined($relSymName{$rel})
+             and ($rel ne "glos") and ($rel ne "syns"));
+        $rel = $relSymName{$rel} if (defined($relSymName{$rel}));
+        
+        my $offset = $self->_indexOffsetLookup($lword, $pos, $sense);
+        my $line = $self->_dataLookup($pos, $offset);
+        
+        if (!$line) {
+            die "Line not found for offset $offset!";
+        }
+        
+        if ($rel eq "glos") {
+            $line =~ m/.*\|\s*(.*)$/;
+            $rtn[0] = $1;
+        } elsif ($rel eq "syns") {
+            @rtn = $self->getAllSenses ($offset, $pos);
+        } else {
+            @rtn = $self->getSensePointers($line, $relNameSym{$rel});
+        }
+    }
+    elsif (defined($pos)) {
+        warn "(querySense) WORD=$word POS=$pos\n" if ($self->{verbose});
+        my @offsets = $self->_indexOffsetLookup($lword, $pos);
+        $word = underscore(delMarker($word));
+        for (my $i=0; $i < @offsets; $i++) {
+            push @rtn, "$word\#$pos\#".($i+1);
+        }
+    }
+    elsif (defined($word)) {
+        warn "(querySense) WORD=$word\n" if ($self->{verbose});
+        $word = underscore(delMarker($word));
+        for (my $i=1; $i <= 4; $i++) {
+            my ($offset) = $self->_indexOffsetLookup($lword, $i);
+            push @rtn, "$word\#".$pos_map{$i} if $offset;
+        }
+    }
+    else
+    {
+        warn "(querySense) no results being returned" if $self->{verbose};
     }
     # Return setting of input record separator
     $/ = $old_separator;
@@ -824,42 +917,39 @@ sub queryWord#
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     die "(queryWord) Bad query string: $string" if (!defined($word));
     my $lword = lower ($word);
-    die "(queryWord) Bad part-of-speech: $string"
-	if (defined($pos) && !$pos_num{$pos});
+    die "(queryWord) Bad part-of-speech: $string" if (defined($pos) && !$pos_num{$pos});
     
     if (defined($sense)) {
-	my $rel = shift;
-	warn "(queryWord) WORD=$word POS=$pos SENSE=$sense RELATION=$rel\n" 
-	    if ($self->{verbose});
-	die "(queryWord) Relation required: $string" if (!defined($rel));
-	die "(queryWord) Bad relation: $rel"
-	    if ((!defined($relNameSym{$rel}) and !defined($relSymName{$rel})));
-	$rel = $relSymName{$rel} if (defined($relSymName{$rel}));
-	
-	my $fh = $self->{data_fh}->[$pos_num{$pos}];
-	my $offset = (unpack "i*", 
-		      $self->{"index"}->[$pos_num{$pos}]->{$lword})[$sense-1];
-	seek $fh, $offset, 0;
-	my $line = <$fh>;
-	push @rtn, $self->getWordPointers($line, $relNameSym{$rel}, $word);
-    } elsif (defined($pos)) {
-	warn "(queryWord) WORD=$word POS=$pos\n" if ($self->{verbose});
-	if (defined($self->{"index"}->[$pos_num{$pos}]->{$lword})) {
-	    my @offset = unpack "i*", 
-	    $self->{"index"}->[$pos_num{$pos}]->{$lword};
-	    $word = underscore(delMarker($word));
-	    for (my $i=0; $i < @offset; $i++) {
-		push @rtn, "$word\#$pos\#".($i+1);
-	    }
-	}
-    } else {
-	print STDERR "(queryWord) WORD=$word\n" if ($self->{verbose});
-	
-	$word = underscore(delMarker($word));
-	for (my $i=1; $i <= 4; $i++) {
-	    push @rtn, "$word\#".$pos_map{$i}
-	    if ($self->{"index"}->[$i]->{$lword});
-	}
+        my $rel = shift;
+        warn "(queryWord) WORD=$word POS=$pos SENSE=$sense RELATION=$rel\n" 
+            if ($self->{verbose});
+        die "(queryWord) Relation required: $string" if (!defined($rel));
+        die "(queryWord) Bad relation: $rel"
+            if ((!defined($relNameSym{$rel}) and !defined($relSymName{$rel})));
+        $rel = $relSymName{$rel} if (defined($relSymName{$rel}));
+        
+        my $offset = $self->_indexOffsetLookup($lword, $pos, $sense);
+        my $line = $self->_dataLookup($pos, $offset);
+	    push @rtn, $self->getWordPointers($line, $relNameSym{$rel}, $word);
+    }
+    elsif (defined($pos))
+    {
+        warn "(queryWord) WORD=$word POS=$pos\n" if ($self->{verbose});
+        my @offsets = $self->_indexOffsetLookup($lword, $pos);
+        $word = underscore(delMarker($word));
+        for (my $i=0; $i < @offsets; $i++) {
+            push @rtn, "$word\#$pos\#".($i+1);
+        }
+    }
+    else
+    {
+        print STDERR "(queryWord) WORD=$word\n" if ($self->{verbose});
+        
+        $word = underscore(delMarker($word));
+        for (my $i=1; $i <= 4; $i++) {
+            my $offset = $self->_indexOffsetLookup($lword, $i);
+            push @rtn, "$word\#".$pos_map{$i} if $offset;
+        }
     }
     # Return setting of input record separator
     $/ = $old_separator;
@@ -876,12 +966,12 @@ sub validForms#
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(valid_forms) Sense number ignored: $string\n" if (defined $sense);
     if (!defined($pos)) {
-	my @rtn;
-	push @rtn, $self->validForms($string."#n");
-	push @rtn, $self->validForms($string."#v");
-	push @rtn, $self->validForms($string."#a");
-	push @rtn, $self->validForms($string."#r");
-	return @rtn;
+        my @rtn;
+        push @rtn, $self->validForms($string."#n");
+        push @rtn, $self->validForms($string."#v");
+        push @rtn, $self->validForms($string."#a");
+        push @rtn, $self->validForms($string."#r");
+        return @rtn;
     }
     
     die "(valid_forms) Invalid part-of-speech: $pos" if (!defined($pos_map{$pos}));
@@ -891,11 +981,43 @@ sub validForms#
     return @valid_forms;
 }
 
+sub _parseIndexLine {
+    my $self = shift;
+    my $line = shift;
+    my ($lemma, $pos, $sense_cnt, $p_cnt, $rline) = split(/\s+/, $line, 5);
+    for (my $i=0; $i < $p_cnt; ++$i) {
+        (undef, $rline) = split(/\s+/, $rline, 2);
+    }
+    my (undef, $tagsense_cnt, @offsets) = split(/\s+/, $rline);
+    ## return offset list packed if caching, otherwise just use an array ref
+    if ($self->{noload}) {
+        return ($lemma, $pos, \@offsets, $tagsense_cnt);
+    }
+    else
+    {
+        return ($lemma, $pos, (pack "i*", @offsets), $tagsense_cnt);
+    }
+}
+
 # List all words in WordNet database of a particular part of speech
 sub listAllWords#
 {
     my ($self, $pos) = @_;
-    return keys(%{$self->{"index"}->[$pos_num{$pos}]});
+    if ($self->{noload}) {
+        my @words;
+        my $fh = $self->_getIndexFH($pos);
+        seek($fh, 0, 0);
+        for my $line (<$fh>) {
+            next if ($line =~ m/^\s/);
+            my ($lemma, @rest) = $self->_parseIndexLine($line);
+            push @words, $lemma;
+        }
+        return @words;
+    }
+    else
+    {
+        return keys(%{$self->{"index"}->[$pos_num{$pos}]});
+    }
 }
 
 # Return length of (some) path to root, plus one (root is considered
@@ -907,7 +1029,7 @@ sub level#
     
     for ($level=0; $word; ++$level)
     {
-	($word) = $self->querySense ($word, "hype");
+	   ($word) = $self->querySense ($word, "hype");
     }
     return $level;
 }
@@ -918,10 +1040,28 @@ sub tagSenseCnt
     # get word, pos, and sense from second argument:
     my ($word, $pos, $sense) = $string =~ /^([^\#]+)(?:\#([^\#]+)(?:\#(\d+))?)?$/; 
     warn "(tagSenseCnt) Ignorning sense: $string" if (defined($sense));
-    die "Word and part-of-speech required word=$word pos=$pos"
-	if (!defined($word) or !defined($pos) or !defined($pos_num{$pos}));
+    die "Word and part-of-speech required word=$word pos=$pos" if (!defined($word) or !defined($pos) or !defined($pos_num{$pos}));
     my $lword = lower($word);
-    return $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lword};
+    return $self->_getTagSenseCnt($lword, $pos);
+}
+
+sub dataPath {
+    my $self = shift;
+    return $self->{dir};
+}
+
+sub _getTagSenseCnt {
+    my $self = shift;
+    my ($lword, $pos) = @_;
+    if ($self->{noload}) {
+        my $line = $self->_indexLookup($pos, $lword);
+        my ($lemma, $pos, $offsets, $tagsense_cnt) = $self->_parseIndexLine($line);
+        return $tagsense_cnt if ($lemma eq $lword);
+    }
+    else
+    {
+        return $self->{"tagsense_cnt"}->[$pos_num{$pos}]->{$lword};
+    }
 }
 
 # module must return true
@@ -940,7 +1080,7 @@ WordNet::QueryData - direct perl interface to WordNet database
 
   use WordNet::QueryData;
 
-  my $wn = WordNet::QueryData->new;
+  my $wn = WordNet::QueryData->new( noload => 1);
 
   print "Synset: ", join(", ", $wn->querySense("cat#n#7", "syns")), "\n";
   print "Hyponyms: ", join(", ", $wn->querySense("cat#n#1", "hypo")), "\n";
@@ -957,10 +1097,8 @@ files.  It requires the WordNet package
 (http://www.cogsci.princeton.edu/~wn/).  It allows the user direct
 access to the full WordNet semantic lexicon.  All parts of speech are
 supported and access is generally very efficient because the index and
-morphical exclusion tables are loaded at initialization.  This
-initialization step is slow (appx. 10-15 seconds), but queries are
-very fast thereafter---thousands of queries can be completed every
-second.
+morphical exclusion tables are loaded at initialization. The module can 
+optionally be used to load the indexes into memory for extra-fast lookups.
 
 =head1 USAGE
 
@@ -985,9 +1123,47 @@ QueryData.  To do this, pass the location to "new":
 
   my $wn = WordNet::QueryData->new("/usr/local/wordnet/dict");
 
-When calling "new" in this fashion, you can give it a second verbosity
-argument; a true value will have QueryData print debugging
-information.
+You can instead call the constructor with a hash of params, as in:
+
+  my $wn = WordNet::QueryData->new(
+      dir => "/usr/local/wordnet/dict",
+      verbose => 0,
+      noload => 1
+  );
+  
+When calling "new" in this fashion, two additional arguments are 
+supported; "verbose" will output debugging information, and "noload"
+will cause the object to *not* load the indexes at startup.
+
+=head2 CACHING VERSUS NOLOAD
+
+The "noload" option results in data being retrieved using a 
+dictionary lookup rather than caching the indexes in RAM.
+This method yields an immediate startup time but *slightly* (though
+less than you might think) longer lookup time. For the curious, here
+are some profile data for each method on a duo core intel mac, averaged
+seconds over 10000 iterations:
+
+=head3 Caching versus noload times in seconds
+
+                                          noload => 1  noload => 0
+------------------------------------------------------------------
+new()                                     0.00001      2.55
+queryWord("descending")                   0.0009       0.0001
+querySense("sunset#n#1", "hype")          0.0007       0.0001
+validForms ("lay down#2")                 0.0004       0.0001
+
+Obviously the new() comparison is not very useful, because nothing is 
+happening with the constructor in the case of noload => 1. Similarly,
+lookups with caching are basically just hash lookups, and therefore very
+fast. The lookup times for noload => 1 illustrate the tradeoff between 
+caching at new() time and using dictionary lookups.
+
+Because of the lookup speed increase when noload => 0, many users will
+find it useful to set noload to 1 during development cycles, and to 0
+when RAM is less of a concern than speed. The bottom line is that 
+noload => 1 saves you over 2 seconds of startup time, and costs you about 
+0.0005 seconds per lookup.
 
 =head2 QUERYING THE DATABASE
 
