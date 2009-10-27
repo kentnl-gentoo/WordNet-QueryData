@@ -10,6 +10,5 @@ die "*** Please set the WNHOME environment variable to the location of your\n***
 WriteMakefile(
     'dist'      => { 'COMPRESS'  => 'gzip', 'SUFFIX'    => '.gz', },
     'NAME'	=> 'WordNet::QueryData',
-#    'VERSION_FROM'   => 'QueryData.pm',
-    'VERSION'   => '1.48',
+    'VERSION'	     => '1.49',
 );

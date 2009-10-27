@@ -50,11 +50,12 @@ ExtUtils::MakeMaker').  To build and test the distribution do:
      make
      make test
 
-If "perl Makefile.PL" breaks or "make test" doesn't work at all ("not
-ok 1"), you may not have the WNHOME environment variable defined
-correctly.  Read the QueryData manual page ("perldoc QueryData.pm") to
-find out how to tell it where your WordNet database is located (you'll
-need to edit test.pl).  
+If "perl Makefile.PL" breaks or "make test" doesn't work at all ("not ok 1"),
+you may not have the WNHOME or WNSEARCHDIR environment variables defined
+correctly.  Read the QueryData manual page ("perldoc QueryData.pm") to find out
+how to tell it where your WordNet database is located (you'll need to edit
+test.pl).  Note that if you are are using Debian/Ubuntu and have the standard
+wordnet package installed , you should set WNSEARCHDIR to /usr/share/wordnet.
 
 If any of the tests fail, send e-mail to the wn-perl mailing list (see
 DOCUMENTATION).

@@ -40,7 +40,7 @@ BEGIN {
     @EXPORT = qw();
     # Allows these functions to be used without qualification
     @EXPORT_OK = qw();
-    $VERSION = do { my @r=(q$Revision: 1.47 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r };
+    $VERSION = "1.49";
 }
 
 #############################
