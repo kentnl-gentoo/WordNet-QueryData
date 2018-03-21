@@ -1,7 +1,7 @@
 ChangeLog
 Makefile.PL
 README
-test.pl
+t/wnqd.t
 QueryData.pm
 MANIFEST
 META.yml                                 Module meta-data (added by MakeMaker)
