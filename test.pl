@@ -5,7 +5,8 @@
 # $Id: test.pl,v 1.40 2007/05/07 01:08:31 jrennie Exp $
 
 my $i = 1;
-BEGIN { 
+BEGIN {
+    print "1..103\n";
     $| = 1;
 }
 END { print "not ok 1\n" unless $loaded; }
@@ -162,14 +163,9 @@ $foo[1] == 2
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 ($wn->querySense('acropetal#a#1', 'dmnc'))[0] eq 'botany#n#2'
     ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-scalar $wn->offset("0#n#1") == 13742358
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
-scalar $wn->listAllWords("noun") == 117798
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
-$wn->offset("child#n#1") == 9917593
-    ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 my ($foo) = $wn->querySense ("cat#n#1", "glos");
 ($foo eq "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats  ") ? print "ok ", $i++, "\n" : print "not ok ", $i++, "\n";
 
 }
+print "0..$i\n";
