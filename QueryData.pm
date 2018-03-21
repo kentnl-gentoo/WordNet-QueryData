@@ -201,7 +201,7 @@ my @excFile = ("", "noun.exc", "verb.exc", "adj.exc", "adv.exc");
 my @indexFile = ("", "index.noun", "index.verb", "index.adj", "index.adv");
 my @dataFile = ("", "data.noun", "data.verb", "data.adj", "data.adv");
 
-my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/local/WordNet-3.0";
+my $wnHomeUnix = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "/usr/share/wordnet";
 my $wnHomePC = defined($ENV{"WNHOME"}) ? $ENV{"WNHOME"} : "C:\\Program Files\\WordNet\\3.0";
 my $wnPrefixUnix = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomeUnix/dict";
 my $wnPrefixPC = defined($ENV{"WNSEARCHDIR"}) ? $ENV{"WNSEARCHDIR"} : "$wnHomePC\\dict";
@@ -1113,7 +1113,7 @@ QueryData knows about two environment variables, WNHOME and
 WNSEARCHDIR.  If WNSEARCHDIR is set, QueryData looks for WordNet data
 files there.  Otherwise, QueryData looks for WordNet data files in
 WNHOME/dict (WNHOME\dict on a PC).  If WNHOME is not set, it defaults
-to "/usr/local/WordNet-3.0" on Unix and "C:\Program Files\WordNet\3.0"
+to "/usr/share/wordnet" on Unix and "C:\Program Files\WordNet\3.0"
 on a PC.  Normally, all you have to do is to set the WNHOME variable
 to the location where you unpacked your WordNet distribution.  The
 database files are normally unpacked to the "dict" subdirectory.
